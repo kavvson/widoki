@@ -73,7 +73,7 @@
     $(document).ready(function () {
         $("#inputKontrahent").select2({
             theme: "bootstrap",
-            //minimumInputLength: 1,
+            width: '410px',
             language: "pl",
             ajax: {
                 type: "GET",

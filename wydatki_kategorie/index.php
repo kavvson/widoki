@@ -26,11 +26,27 @@
                     <table class="table table-striped table-bordered">
                         <tr>
                             <th>Nazwa kategorii</th>
+                            <th>Powiązania</th>
                             <th>Czynności</th>
                         </tr>
                         <?php foreach ($wydatki_kategorie as $w) { ?>
                             <tr>
                                 <td><?php echo $w['nazwa']; ?></td>
+                                <td><?php
+                                    if($w['do_pojazdu']){
+
+
+                                    ?>
+                                    <div class="form-check form-check-inline has-success">
+                                        <label class="form-check-label">
+                                            <input type="checkbox" class="form-check-input" checked disabled>
+                                            <span class="checkbox-icon fuse-ripple-ready"></span>
+                                            <span>Pojazd</span>
+                                        </label>
+                                    </div>
+                                    <?PHP
+                                    }
+                                    ?></td>
                                 <td>
                                     <a href="<?php echo site_url('wydatki_kategorie/edit/' . $w['id_kat']); ?>" class="btn btn-info btn-xs">Edytuj</a> 
                                 </td>

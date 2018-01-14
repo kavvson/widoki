@@ -15,7 +15,7 @@
 
             <div class="profile-box info-box general card mb-4">
                 <header class="h6 row no-gutters align-items-center justify-content-between bg-primary text-auto p-4">
-                    <div class="title">Informacje o pensji</div>
+                    <div class="title">Umowy o pracę</div>
                     <div class="row no-gutters" style="display: -webkit-inline-box;">
                         <div class="form-group pmd-textfield pmd-textfield-floating-label">
                             <label for="regular1" class="control-label" style="width: 127px;">Miesiąc</label>

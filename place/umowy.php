@@ -15,7 +15,7 @@
 
             <div class="profile-box info-box general card mb-4">
                 <header class="h6 row no-gutters align-items-center justify-content-between bg-primary text-auto p-4">
-                    <div class="title">Informacje o umowach</div>
+                    <div class="title">Umowy zlecenia</div>
                     <?PHP if(!isset($id)) { ?>
                         <div class="row no-gutters" style="display: -webkit-inline-box;">
                             <div class="form-group pmd-textfield pmd-textfield-floating-label">
@@ -83,6 +83,7 @@
                     <?PHP } ?>
                     <th>Data zakończenia</th>
                     <th>Data rozpoczęcia</th>
+                    <th>Data rachunku</th>
                     <th>Zus Pracownik</th>
                     <th>Zus Pracodawca</th>
                     <th>Zus Łącznie</th>
@@ -198,6 +199,7 @@
                 <?PHP } ?>
                 {data: "data_zakonczenia"},
                 {data: "data_rozpoczecia"},
+                {data: "data_rachunku"},
                 {data: "zus_pracownik"},
                 {data: "zus_pracodawca"},
                 {data: "zus_lacznie"},

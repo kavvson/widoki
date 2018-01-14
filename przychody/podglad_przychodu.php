@@ -1,45 +1,58 @@
 <div class="doc page-layout simple full-width">
-    <!-- HEADER -->
+    <?PHP
+    $pOpl = (100 * $w->otrzymana_kwota) / $w->wartosc;
+    $pZos = 100 - $pOpl;
+    ?>
     <div class="light-fg d-flex flex-column justify-content-center justify-content-lg-end p-6 pt-3"
          style="background-color: #4fc3f7 !important;">
-        <div
-                class="flex-column row flex-lg-row align-items-center align-items-lg-end no-gutters justify-content-between">
+        <div class="flex-column row flex-lg-row align-items-center align-items-lg-end no-gutters justify-content-between">
             <div class="user-info flex-column row flex-lg-row no-gutters align-items-center">
-
-
                 <div class="name h2 my-6">Przegląd faktury - <?PHP echo $w->numer; ?></div>
-
             </div>
-
-
         </div>
     </div>
-    <!-- / HEADER -->
-
 
     <div class="page-content row p-12">
 
         <!-- STANDARD ALERTS -->
         <div class="col-9 col-md-9">
+            <div class="profile-box groups card mb-4">
 
-            <div class="profile-box info-box contact card mb-4">
+                <header class="row no-gutters align-items-center justify-content-between bg-primary text-auto p-4">
+                    <div class="title h6">Narzędzia</div>
+                    <div class="actions row align-items-center no-gutters"></div>
+                </header>
 
-                <header class="h6 row no-gutters align-items-center justify-content-between bg-primary text-auto p-4">
-                    <div class="title"><?PHP echo $w->numer; ?></div>
+                <div class="content p-4">
 
+                    <button type="button" data-toggle="modal"
+                            data-target="#dynamic-modal-korekta_nr" class="btn btn bg-orange more"><i
+                                class="icon-settings"></i> Zamiana numeru
+                    </button>
+                    <button type="button" id="delete_fv" class="btn btn bg-red more"><i
+                                class="icon-trash"></i> Usuń fakturę
+                    </button>
+                    <?PHP if ($pZos == "100") {
+                        echo '<a class="btn btn-primary" href="' . base_url() . 'Przychody/edit/' . $w->id_przychodu . '"><i class="icon-settings"></i> Modyfikacja faktury</a>';
+                    } ?>
                     <?PHP if ($w->pozostala_kwota > 0) { ?>
                         <button type="button" id="btn-reset" data-toggle="modal"
                                 data-target="#oplacModal" class="btn btn bg-green more">Zarejestruj płatność
                         </button>
                     <?PHP } ?>
+                    <a class="btn btn-primary"
+                       href="<?PHP echo base_url() . "Przychody/Korekta/" . $w->id_przychodu; ?>"><i
+                                class="icon-plus"></i> Dodaj korektę</a>
+                </div>
+            </div>
+            <div class="profile-box info-box contact card mb-4">
+
+                <header class="h6 row no-gutters align-items-center justify-content-between bg-primary text-auto p-4">
+                    <div class="title"><?PHP echo $w->numer; ?></div>
                 </header>
 
                 <div class="content p-4">
 
-                    <?PHP
-                    $pOpl = (100 * $w->otrzymana_kwota) / $w->wartosc;
-                    $pZos = 100 - $pOpl;
-                    ?>
 
                     <div class="info-line mb-6">
 
@@ -140,7 +153,8 @@
             <div class="profile-box info-box contact card mb-4" style="height:400px">
                 <header class="h6 row no-gutters align-items-center justify-content-between bg-primary text-auto p-4">
                     <div class="title">Podgląd faktury <?PHP echo $w->numer; ?></div>
-                    <a href="<?PHP echo site_url() . 'Przychody/PodgladFaktury/' . $w->id_przychodu.'/duplikat';?>" class="btn btn-secondary more">Duplikat
+                    <a href="<?PHP echo site_url() . 'Przychody/PodgladFaktury/' . $w->id_przychodu . '/duplikat'; ?>"
+                       class="btn btn-secondary more">Duplikat
                     </a>
                 </header>
 
@@ -192,16 +206,11 @@
 
         <div class="about-sidebar col-12 col-md-5 col-xl-3">
 
-
             <div class="profile-box groups card mb-4">
 
-                <header
-                        class="row no-gutters align-items-center justify-content-between bg-primary text-auto p-4">
+                <header class="row no-gutters align-items-center justify-content-between bg-primary text-auto p-4">
                     <div class="title h6">Korekty faktury</div>
-                    <div class="actions row align-items-center no-gutters">
-                        <a class="btn btn-secondary" href="<?PHP echo base_url() . "Przychody/Korekta/" . $w->id_przychodu; ?>"><i
-                                    class="icon-settings"></i> Dodaj</a>
-                    </div>
+                    <div class="actions row align-items-center no-gutters"></div>
                 </header>
 
                 <div class="content p-4">
@@ -220,11 +229,15 @@
                             <?PHP
 
                             foreach ($pobierz_korekty as $kor) {
-                                if($kor['nazwa']){$nazwa = $kor['nazwa'];}else{$nazwa = "Korekta-".$kor['nrkorekty'];};
+                                if ($kor['nazwa']) {
+                                    $nazwa = $kor['nazwa'];
+                                } else {
+                                    $nazwa = "Korekta-" . $kor['nrkorekty'];
+                                };
                                 ?>
 
                                 <?PHP
-                                echo "<tr><td><a href='" . base_url() . "Przychody/PodgladFaktury/".$w->id_przychodu."/" . $kor['nrkorekty'] . "'>" . $nazwa . "</a></td></tr>";
+                                echo "<tr><td><a href='" . base_url() . "Przychody/PodgladFaktury/" . $w->id_przychodu . "/" . $kor['nrkorekty'] . "'>" . $nazwa . "</a></td></tr>";
                             }
                             ?>
                             </tbody>
@@ -375,7 +388,9 @@
                 <div class="alert alert-danger" role="alert">
                     <h4 class="alert-heading">Uwaga! Zaległe płatności <?PHP echo $w->kontrah; ?>
                         wynoszą <?PHP echo $zalegle_zgloszenia[$last_key]["pozostala_kwota"]; ?> zł</h4>
-                    <a class="btn btn bg-primary more text-white" href="<?PHP echo base_url();?>Przychody/Monit/<?PHP echo$w->fk_kontrahent;?>">Generuj monit</a>
+                    <a class="btn btn bg-primary more text-white"
+                       href="<?PHP echo base_url(); ?>Przychody/Monit/<?PHP echo $w->fk_kontrahent; ?>">Generuj
+                        monit</a>
                     <p>
                     <table id="table" class="table table-striped table-bordered dataTable no-footer dtr-inline"
                            cellspacing="0" width="100%">
@@ -457,14 +472,196 @@
             </div>
         </div>
     </div>
+    <div id="dynamic-modal-korekta_nr" class="modal modal-wide hide fade in" tabindex="-1" role="dialog">
+
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header bg-green-400 text-white">
+
+                    <div class="row col-lg-12">
+                        <div class="col-md-12 "><h4 class="modal-title" id="myLargeModalLabel"><i
+                                        class="icon-settings"></i> Zmiana numeru
+                                faktury</h4></div>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="profile-box info-box general card mb-4">
+                        <form id="fnrform" name="fnrform" method="post">
+                            <header class="h6 bg-deep-purple-500 text-auto p-4">
+                                <div class="title">Korekta numeru faktury</div>
+                            </header>
+
+                            <div class="content p-4">
+
+                                <div class="row">
+                                    <div class="form-group col-md-12">
+                                        <label for="inputFNl" class="col-form-label">Nowy numer</label>
+                                        <input type="text" class="form-control" name="inputFN" id="inputFN"
+                                               value="<?PHP echo $w->numer; ?>">
+                                    </div>
+                                </div>
+
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="zmienNrF"
+                            class="btn btn-primary fuse-ripple-ready">Zmień
+                    </button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Zamknij</button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 </div>
 <!-- / CONTENT -->
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/3.2.6/jquery.inputmask.bundle.min.js"></script>
+<script src="<?PHP echo base_url(); ?>assets/sweetalert2.min.js"></script>
+<link rel="stylesheet" href="<?PHP echo base_url(); ?>assets/sweetalert2.min.css">
 <script>
+
     $(document).ready(function () {
+
+
+        $('#delete_fv').click(function (e) {
+            swal({
+                title: 'Czy chcesz usunąć fakturę?',
+                text: "",
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Tak',
+                cancelButtonText: 'Nie',
+                confirmButtonClass: 'btn btn-success',
+                cancelButtonClass: 'btn btn-danger',
+                buttonsStyling: false
+            }).then(function () {
+
+                ///////////
+                var csrfName = '<?php echo $this->security->get_csrf_token_name(); ?>',
+                    csrfHash = '<?php echo $this->security->get_csrf_hash(); ?>';
+
+                e.preventDefault();
+                $.ajax({
+                    url: '<?PHP echo base_url(); ?>Przychody/UsunFakture/<?PHP echo $w->id_przychodu; ?>',
+                    method: 'POST',
+                    data: csrfName + "=" + csrfHash,
+                    success: function (data) {
+
+
+                        if (data.response.message === "Usunięto") {
+                            location.reload();
+                        }
+
+                        swal({
+                                title: 'Komunikat !',
+                                html: data.response.message,
+                                type: 'success'
+                            },
+                            function () {
+                                location.reload();
+                            });
+
+
+                        if (data.response.potwierdzenie) {
+                            swal({
+                                    title: 'Potwierdzenie !',
+                                    html: '<a href="<?PHP echo base_url();?>' + data.response.potwierdzenie + '" target="_blank">Podgląd</a>',
+                                    type: 'success'
+                                },
+                                function () {
+                                    location.reload();
+                                });
+
+                        }
+
+
+                    }
+                });
+                ////////////
+
+
+            }, function (dismiss) {
+                if (dismiss === 'cancel') {
+                    swal(
+                        'Anulowano',
+                        '',
+                        'error'
+                    )
+                }
+            });
+
+
+        });
+
+        $('#zmienNrF').click(function (e) {
+            var csrfName = '<?php echo $this->security->get_csrf_token_name(); ?>',
+                csrfHash = '<?php echo $this->security->get_csrf_hash(); ?>';
+            var $formf = $("#fnrform");
+            e.preventDefault();
+            $.ajax({
+                url: '<?PHP echo base_url(); ?>Przychody/ZmienNrFaktury/<?PHP echo $w->id_przychodu; ?>',
+                method: 'POST',
+                data: $formf.serialize() + "&" + csrfName + "=" + csrfHash,
+                success: function (data) {
+                    $(this).closest('form').find("input[type=text]").val("");
+
+
+                    if (data.response.status) {
+                        if (data.response.message === "Zmodyfikowano") {
+
+
+                            setTimeout(
+                                function () {
+                                    location.reload();
+
+                                }, 1500);
+
+                        }
+
+                    }
+                    new PNotify({
+                        text: data.response.message,
+                        confirm: {
+                            confirm: true,
+                            buttons: [
+                                {
+                                    text: 'Zamknij',
+                                    addClass: 'btn btn-link',
+                                    click: function (notice) {
+                                        notice.remove();
+                                    }
+                                },
+                                null
+                            ]
+                        },
+                        buttons: {
+                            closer: false,
+                            sticker: false
+                        },
+                        animate: {
+                            animate: true,
+                            in_class: 'slideInDown',
+                            out_class: 'slideOutUp'
+                        },
+                        addclass: 'md multiline action-on-bottom'
+                    });
+
+                }
+            });
+
+        });
+
+
         var csrfName = '<?php echo $this->security->get_csrf_token_name(); ?>',
             csrfHash = '<?php echo $this->security->get_csrf_hash(); ?>';
         var $form = $("#nowaOplata");

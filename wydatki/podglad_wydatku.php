@@ -8,7 +8,10 @@
             <div class="user-info flex-column row flex-lg-row no-gutters align-items-center">
 
 
-                <div class="name h2 my-6">Przegląd wydatku - <?PHP echo $w->dokument; ?></div>
+                <div class="name h2 my-6">Przegląd wydatku - <?PHP if ($w->pro_forma) { ?>
+                        <img class="img-ref" src="<?PHP echo base_url("assets/images/proforma.png"); ?>" alt="proforma">
+                    <?PHP } ?> <?PHP echo $w->dokument; ?></div>
+
 
             </div>
 
@@ -23,45 +26,34 @@
 
     <div class="page-content row p-12">
 
+
         <div class="col-9 col-md-9">
             <?PHP
-            $zalegle_zgloszenia = $this->Statistic_model->Ilezostalodozaplaty($w->kontrahent);
-            $last_key = end((array_keys($zalegle_zgloszenia)));
-
-            if ($zalegle_zgloszenia[0]["pozostala_kwota"] && count($zalegle_zgloszenia) > 2) {
-                ?>
-
-                <div class="alert alert-danger" role="alert">
-                    <h4 class="alert-heading">Uwaga! Zobowiązania wobec <?PHP echo $w->kontrah; ?>
-                        wynoszą <?PHP echo $zalegle_zgloszenia[$last_key]["pozostala_kwota"]; ?> zł</h4>
-                    <p>
-                    <table id="table" class="table table-striped table-bordered dataTable no-footer dtr-inline"
-                           cellspacing="0" width="100%">
-                        <thead class="btn-primary bg-primary">
-                        <tr>
-                            <th width="80%">Numer wydatku</th>
-                            <th width="10%">Pozostała kwota</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-
-                        <?PHP
-                        unset($zalegle_zgloszenia[$last_key]);
-                        foreach ($zalegle_zgloszenia as $a) {
-                            ?>
-
-                            <?PHP
-                            echo "<tr><td><a href='" . base_url() . "/Wydatki/Podglad/" . $a['id_wydatku'] . "'>" . $a['dokument'] . '</a></td><td>' . $a['pozostala_kwota'] . "</td></tr>";
-                        }
-                        ?>
-                        </tbody>
-                    </table>
-                    </p>
-
-                </div>
-            <?PHP } ?>
+            if (!empty($w->zwroc_in)) {
+                echo '<div class="alert alert-danger h6">
+                              <strong>Uwaga!</strong> <img src="' . base_url('assets/images/refund.png') . '"
+                                                     alt="zwrot"> Niniejszy wydatek został opłacony przez pracownika, opłacając ten wydatek należy rozliczyć kwotę ' . $w->pozostala_kwota . ' względem ' . $w->zwroc_in . '
+                          </div><br>';
+            }
 
 
+            if ($w->pro_forma == 1) {
+                echo '<div class="alert alert-danger h6">
+                              <strong>Uwaga!</strong> <img src="' . base_url('assets/images/proforma.png') . '"
+                                                     alt="zwrot">';
+
+                if(empty($proforma->id)){
+                    echo " Niniejszy wydatek jest pro formą, należy pamiętać aby dodać finalną fakturę do systemu w celu zamknięcia wydatku ";
+                }else{
+                    echo " Niniejszy wydatek posiada już podpiętą fakturę do pro formy, załączenie nowej faktury nadpisze starą ";
+                }
+
+                echo '<button type="button" id="btn-attach-fv" data-toggle="modal"
+                                data-target="#attach-fv" class="btn btn bg-green more"> Załącz
+                        </button>
+                          </div><br>';
+            }
+            ?>
             <div class="profile-box info-box contact card mb-4">
 
                 <header class="h6 row no-gutters align-items-center justify-content-between bg-primary text-auto p-4">
@@ -98,35 +90,6 @@
                 </div>
             </div>
 
-            <script src="https://code.highcharts.com/highcharts.src.js"></script>
-            <script src="https://code.highcharts.com/highcharts-more.js"></script>
-            <div class="profile-box info-box contact card mb-4">
-
-
-                <?PHP
-                $wykres = $this->Statistic_model->StatystykiPracownika_Wartosci($w->id_kupujacy);
-
-                $pola = array();
-                $wartosci = array();
-                if (!empty($wykres)) {
-                    foreach ($wykres as $wp) {
-                        $pola[] = $wp['Category'];
-                        $wartosci[] = $wp['ThisMonth'];
-                        $wartosci_last[] = $wp['LastMonth'];
-                        $wartosci_blast[] = $wp['PrevMonth'];
-                    }
-                }
-                ?>
-
-                <header class="h6 row no-gutters align-items-center justify-content-between bg-primary text-auto p-4">
-                    <div class="title">Statystyka nabywcy</div>
-
-                </header>
-
-                <div class="content p-4">
-                    <?PHP echo $this->Statistic_model->polygonWydatkiKategorie("Wydatki pracownika  " . $w->kupujacy, $pola, $wartosci, $wartosci_last, $wartosci_blast, "Wydatki") ?>
-                </div>
-            </div>
 
             <!-- rozbita faktura -->
 
@@ -206,13 +169,26 @@
             <?PHP } ?>
             <!--s -->
             <?PHP
+            if(!empty($proforma->id)){
+                $path = $proforma->path;
+            }else{
+                if(!empty($w->path))
+                {
+                    $path = $w->path;
+                }else{
+                    $path ="";
+                }
+            }
             if (!empty($w->path)) {
                 $path_parts = pathinfo(site_url() . '' . $w->path);
                 ?>
                 <div class="profile-box info-box contact card mb-4" style="height:400px">
 
-                    <header class="h6 bg-primary text-auto p-4">
-                        <div class="title">Podgląd faktury <?PHP echo $w->dokument; ?></div>
+                    <header class="h6 row no-gutters align-items-center justify-content-between bg-primary text-auto p-4">
+                        <div class="title">Podgląd <?PHP if(!empty($proforma->id)){ echo "pro formy"; }else { echo "faktury";} ?> <?PHP echo $w->dokument; ?>
+                        </div>
+                        <a href="<?PHP echo site_url() . '' . $w->path; ?>" class="btn btn-secondary more fuse-ripple-ready">Podgląd
+                        </a>
                     </header>
 
                     <?PHP
@@ -228,6 +204,62 @@
                 </div>
             <?PHP } ?>
 
+            <?PHP
+            if (!empty($w->prof_skan)) {
+                $path_parts = pathinfo(site_url() . '' . $path);
+                ?>
+                <div class="profile-box info-box contact card mb-4" style="height:400px">
+
+                    <header class="h6 row no-gutters align-items-center justify-content-between bg-primary text-auto p-4">
+                        <div class="title">Podgląd faktury <?PHP echo $w->dokument; ?></div>
+                        <a href="<?PHP echo site_url() . '' . $path; ?>" class="btn btn-secondary more fuse-ripple-ready">Podgląd
+                        </a>
+                    </header>
+
+                    <?PHP
+                    if ($path_parts['extension'] != "pdf") {
+                        echo '<div style="margin: 0px; padding: 0px;height:100%;width:100%;">';
+                        echo "<img style=\"height: 100%; width: 100%;\" src='" . site_url() . "" . $path . "'></div>";
+                    } else {
+                        ?>
+                        <iframe src="https://docs.google.com/viewer?url=<?PHP echo site_url() . '' . $path; ?>&embedded=true"
+                                style="width:100%; height:100%;" frameborder="0"></iframe>
+
+                    <?PHP } ?>
+                </div>
+            <?PHP } ?>
+
+            <script src="https://code.highcharts.com/highcharts.src.js"></script>
+            <script src="https://code.highcharts.com/highcharts-more.js"></script>
+            <div class="profile-box info-box contact card mb-4">
+
+
+                <?PHP
+
+
+                $wykres = $this->Statistic_model->StatystykiPracownika_Wartosci($w->id_kupujacy);
+
+                $pola = array();
+                $wartosci = array();
+                if (!empty($wykres)) {
+                    foreach ($wykres as $wp) {
+                        $pola[] = $wp['Category'];
+                        $wartosci[] = $wp['ThisMonth'];
+                        $wartosci_last[] = $wp['LastMonth'];
+                        $wartosci_blast[] = $wp['PrevMonth'];
+                    }
+                }
+                ?>
+
+                <header class="h6 row no-gutters align-items-center justify-content-between bg-primary text-auto p-4">
+                    <div class="title">Statystyka nabywcy</div>
+
+                </header>
+
+                <div class="content p-4">
+                    <?PHP echo $this->Statistic_model->polygonWydatkiKategorie("Wydatki pracownika  " . $w->kupujacy, $pola, $wartosci, $wartosci_last, $wartosci_blast, "Wydatki") ?>
+                </div>
+            </div>
             <div class="profile-box info-box contact card mb-4">
 
                 <header class="h6 bg-primary text-auto p-4">
@@ -281,6 +313,30 @@
 
                 <div class="content p-4">
 
+                    <?PHP if ($w->pro_forma) { ?>
+                        <div class="group row no-gutters align-items-center justify-content-between mb-4">
+
+                            <div class="col-md-6">
+                                Rodzaj faktury
+                            </div>
+                            <div class="col-md-6 pull-right">
+                                <img class="img-ref" src="<?PHP echo base_url("assets/images/proforma.png"); ?>"
+                                     alt="proforma"> Pro forma
+                            </div>
+                        </div>
+
+                    <?PHP } ?>
+
+
+                    <div class="group row no-gutters align-items-center justify-content-between mb-4">
+
+                        <div class="col-md-6">
+                            Metoda płatności
+                        </div>
+                        <div class="col-md-6 pull-right">
+                            <?PHP echo Wydatki_model::metoda_ikona($w->metoda_platnosci); ?>
+                        </div>
+                    </div>
                     <div class="group row no-gutters align-items-center justify-content-between mb-4">
 
                         <div class="col-md-6">
@@ -463,7 +519,7 @@
                             <?PHP
                             $adres = $this->Adresy_model->pokaz_adres($w->fkaddress);
                             if (!empty($adres)) {
-                                echo $adres->ulica . ", " .$adres->kod_pocztowy. " ". $adres->miasto;
+                                echo $adres->ulica . ", " . $adres->kod_pocztowy . " " . $adres->miasto;
                             }
 
                             ?>
@@ -576,6 +632,27 @@
         </div>
     </div>
 
+    <!-- dynamic attach-fv -->
+    <div id="attach-fv" class="modal fade" role="dialog"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+
+                <div class="modal-header bg-green-400 text-white">
+
+                    <div class="row col-lg-12">
+                        <div class="col-md-4 "><h4 class="modal-title" id="myLargeModalLabel">Załączanie faktury</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="loader"></div>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <!-- dynamic attach-fv -->
 </div>
 </div>
 <!-- / CONTENT -->
@@ -586,6 +663,27 @@
         var csrfName = '<?php echo $this->security->get_csrf_token_name(); ?>',
             csrfHash = '<?php echo $this->security->get_csrf_hash(); ?>';
         var $form = $("#nowaOplata");
+        $("#attach-fv").on("show.bs.modal", function(e) {
+            setTimeout(
+                function () {
+                    $.ajax({
+                        url: '<?PHP echo base_url() . "Wydatki/zalacz_fv_modal/".$w->id_wydatku; ?>',
+                        method: 'POST',
+                        data: csrfName + "=" + csrfHash,
+                        success: function (data) {
+                            $("#attach-fv").find(".modal-body").html(data);
+                        }
+                    });
+
+                }, 1000);
+        });
+
+        $(document).on('hidden.bs.modal', '#attach-fv', function () {
+            $("#attach-fv > div > div > div.modal-body").html('<div class="loader"></div>');
+            $("#attach-fv").removeData();
+
+        });
+
 
         $("#inputBrutto").inputmask({alias: "currency", prefix: "Zł "});
         $("#oplacCzesciowobtn").click(function (e) {

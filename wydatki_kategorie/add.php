@@ -19,15 +19,24 @@
                 <div class="content p-4">
                     <?php echo form_open('wydatki_kategorie/add', array("class" => "form-horizontal")); ?>
                     <div class="row">
-                        <div class="form-group col-lg-10">
+                        <div class="form-group col-lg-8">
                             <label for="nazwa" class="control-label"><span class="text-danger">*</span>Nazwa kategorii</label>
                             <input type="text" name="nazwa" value="<?php echo $this->input->post('nazwa'); ?>" class="form-control" id="nazwa" />
                             <span class="text-danger"><?php echo form_error('nazwa'); ?></span>
                         </div>
+                        <div class="form-check form-check-inline has-success">
+                            <label class="form-check-label">
+                                <input type="checkbox" class="form-check-input" name="pojazd" id="pojazd">
+                                <span class="checkbox-icon fuse-ripple-ready"></span>
+                                <span>Dotyczy pojazdu</span>
+                            </label>
 
-                        <div class="form-group col-lg-2">
-                            <button type="submit" class="btn btn-success">Dodaj</button>
+                                <button type="submit" class="btn btn-success">Dodaj</button>
+
                         </div>
+
+
+
                     </div>
 
                     <?php echo form_close(); ?>

@@ -3,7 +3,6 @@
 
         <!-- STANDARD ALERTS -->
         <div class="col-12 col-md-12">
-
             <link href="https://cdn.datatables.net/1.10.15/css/dataTables.material.min.css" rel="stylesheet">
 
             <link rel="stylesheet" type="text/css"
@@ -43,8 +42,12 @@
                                     <span>Po terminie</span>
                                 </label>
                             </div>
-
+                            <div style="float: right; cursor: pointer;">
+                                <span class="icon s-6 icon-cart my-cart-icon"><span
+                                            class="badge badge-success my-cart-badge"></span></span>
+                            </div>
                         </div>
+
                     </div>
                 </header>
 
@@ -197,6 +200,16 @@
                                         <span><i class="icon icon-bank s40"></i></span>
                                     </label>
                                 </div>
+                                <div class="form-check form-check has-dangerer">
+                                    <label class="form-check-label">
+                                        <input type="checkbox" class="form-check-input" name="metodaPlatnosci"
+                                               value="4"/>
+                                        <span class="checkbox-icon"></span>
+                                        <span><img style="width: 24px;"
+                                                   src="<?PHP echo base_url('assets/images/refund.png'); ?>"
+                                                   alt="zwrot"></span>
+                                    </label>
+                                </div>
                             </div>
                             <div class="form-group chkboxs col-sm-2">
 
@@ -206,6 +219,22 @@
                                                value="1"/>
                                         <span class="checkbox-icon"></span>
                                         <span><i class="icon-file-hidden icon"></i></span>
+                                    </label>
+                                </div>
+                                <div class="form-check form-check has-success">
+                                    <label class="form-check-label">
+                                        <input type="checkbox" class="form-check-input" name="s_rodzaj_f"
+                                               value="1"/>
+                                        <span class="checkbox-icon"></span>
+                                        <span><img class="img-ref" src="<?PHP echo base_url("assets/images/proforma.png"); ?>" alt="proforma"></span>
+                                    </label>
+                                </div>
+                                <div class="form-check form-check has-success">
+                                    <label class="form-check-label">
+                                        <input type="checkbox" class="form-check-input" name="s_profbezskanu"
+                                               value="1"/>
+                                        <span class="checkbox-icon"></span>
+                                        <span><img class="img-ref" src="<?PHP echo base_url("assets/images/proforma.png"); ?>" alt="proforma"> Bez skanu</span>
                                     </label>
                                 </div>
                             </div>
@@ -348,14 +377,19 @@
                                 <h5>Metoda płatności</h5>
 
                                 <div class="row col-lg-12">
-                                    <div class="col-lg-4">
+                                    <div class="col-lg-3">
                                         <i class="icon icon-cash-100 s40"></i> Gotówka
                                     </div>
-                                    <div class="col-lg-4">
+                                    <div class="col-lg-3">
                                         <i class="icon icon-bank s40"></i> Przelew
                                     </div>
-                                    <div class="col-lg-4">
+                                    <div class="col-lg-3">
                                         <i class="icon icon-credit-card-multiple s40"></i> Karta
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <img style="width: 24px;"
+                                             src="<?PHP echo base_url('assets/images/refund.png'); ?>" alt="zwrot"> Do
+                                        zwrot
                                     </div>
                                 </div>
                             </div>
@@ -452,6 +486,12 @@
 <script src="<?PHP echo base_url(); ?>assets/js/fv.js"></script>
 <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.12.0/jquery.validate.min.js"
         type="text/javascript"></script>
+<script src="<?PHP echo base_url(); ?>assets/sweetalert2.min.js"></script>
+<link rel="stylesheet" href="<?PHP echo base_url(); ?>assets/sweetalert2.min.css">
+<style>.img-ref {
+        width: 24px;
+        margin-top: -11px;
+    }</style>
 <script type="text/javascript">
     function addCommas(nStr) {
         nStr += '';
@@ -533,7 +573,7 @@
 
             select.onchange = function () {
                 lastSelected = select.options[select.selectedIndex].value;
-                console.log(lastSelected);
+                //console.log(lastSelected);
                 localStorage.setItem('inputZakresDat_wydatki', lastSelected);
 
             }
@@ -551,7 +591,7 @@
 
             select.onchange = function () {
                 lastSelected = select.options[select.selectedIndex].value;
-                console.log(lastSelected);
+                //console.log(lastSelected);
                 localStorage.setItem('s_rejon_wydatki', lastSelected);
 
             }
@@ -898,6 +938,8 @@
                         data.dateTo = $('#dateTo').val();
                     }
 
+                    data.s_rodzaj_f = $("input[name='s_rodzaj_f']:checked").val();
+                    data.s_profbezskanu = $("input[name='s_profbezskanu']:checked").val();
 
                     data.s_narzecz = $("#inputNaRzeczf").select2('data')[0]['id'];
                     data.s_kontrakt = $("#inputKontraktf").select2('data')[0]['id'];
@@ -984,7 +1026,7 @@
 
                 });
 
-                $("input[name=inputNrFaktury").on("change paste keyup", function () {
+                $("input[name=inputNrFaktury]").on("change paste keyup", function () {
                     if (this.value.length >= 3) {
                         table.search(this.value).draw();
                     }
@@ -993,15 +1035,19 @@
                     }
                 });
 
-                $("input[name=statusPlatnosci").on("change", function () {
+                $("input[name=statusPlatnosci]").on("change", function () {
 
                     table.search(this.value).draw();
                 });
-                $("input[name=metodaPlatnosci").on("change", function () {
+                $("input[name=s_rodzaj_f]").on("change", function () {
 
                     table.search(this.value).draw();
                 });
-                $("input[name=pusteSkany").on("change", function () {
+                $("input[name=metodaPlatnosci]").on("change", function () {
+
+                    table.search(this.value).draw();
+                });
+                $("input[name=pusteSkany],input[name=s_profbezskanu]").on("change", function () {
 
                     table.search(this.value).draw();
                 });
@@ -1029,7 +1075,12 @@
                 {data: "kwota_netto", className: ""},
                 {
                     data: "dokument", "mRender": function (data, type, full) {
-                    return '<a href="Wydatki/Podglad/' + full["nr"] + '">' + data + '</a>'
+                    if (full['pro_forma']) {
+                        return '<img class="img-ref" src="<?PHP echo base_url("assets/images/proforma.png"); ?>" alt="proforma"> ' + '<a href="Wydatki/Podglad/' + full["nr"] + '">' + data + '</a>'
+                    } else {
+                        return '<a href="Wydatki/Podglad/' + full["nr"] + '">' + data + '</a>'
+                    }
+
                 }
                 },
                 {data: "data_zakupu", className: ""},
@@ -1068,6 +1119,7 @@
                 {
                     data: "metoda_platnosci", "mRender": function (data, type, full) {
                     var s = "";
+
                     switch (full["priorytet"]) {
                         case "3":
                             s += '<i class="icon icon-hexagon-outline s40"></i> '
@@ -1079,7 +1131,11 @@
                             s += '<i class="icon icon-alert-octagon text-red s40"></i> '
                             break;
                     }
+
                     switch (data) {
+                        case "4":
+                            s += '<img class="img-ref" src="<?PHP echo base_url("assets/images/refund.png"); ?>" alt="zwrot">';
+                            break;
                         case "3":
                             s += '<i class="icon icon-credit-card-multiple s40"></i>';
                             break;
@@ -1109,7 +1165,16 @@
                 }
                 },
                 {data: "kat",},
-                {data: "pozostala_kwota"},
+                {
+                    data: "pozostala_kwota", "mRender": function (data, type, full) {
+                    if (data > 0) {
+                        return '<button class="btn-xs btn-danger my-cart-btn" data-id="' + full['nr'] + '" data-name="' + full['dokument'] + '" data-summary="summary 1" data-price="' + full['pozostala_kwota'] + '" data-quantity="1" data-image="">' + data + ' Opłać</button>';
+
+                    } else {
+                        return "Opłacona";
+                    }
+                }
+                },
                 {data: "zaplacona_kwota"},
                 {data: "rozbita", visible: false},
                 {data: "ddif", visible: false},
@@ -1156,8 +1221,556 @@
             table.ajax.reload(); //just reload table
         });
     });
-    // Dodawanie wydatku
 
+</script>
+
+
+<script type="text/javascript">
+    /*
+* jQuery myCart - v1.5 - 2017-10-23
+* http://asraf-uddin-ahmed.github.io/
+* Copyright (c) 2017 Asraf Uddin Ahmed; Licensed None
+*/
+
+    (function ($) {
+
+        "use strict";
+
+        var OptionManager = (function () {
+            var objToReturn = {};
+
+            var _options = null;
+            var DEFAULT_OPTIONS = {
+                currencySymbol: 'zł',
+                classCartIcon: 'my-cart-icon',
+                classCartBadge: 'my-cart-badge',
+                classProductQuantity: 'my-product-quantity',
+                classProductRemove: 'my-product-remove',
+                classCheckoutCart: 'my-cart-checkout',
+                affixCartIcon: true,
+                showCheckoutModal: true,
+                numberOfDecimals: 2,
+                cartItems: null,
+                clickOnAddToCart: function ($addTocart) {
+                },
+                afterAddOnCart: function (products, totalPrice, totalQuantity) {
+                },
+                clickOnCartIcon: function ($cartIcon, products, totalPrice, totalQuantity) {
+                },
+                checkoutCart: function (products, totalPrice, totalQuantity) {
+                },
+                getDiscountPrice: function (products, totalPrice, totalQuantity) {
+                    return null;
+                }
+            };
+
+
+            var loadOptions = function (customOptions) {
+                _options = $.extend({}, DEFAULT_OPTIONS);
+                if (typeof customOptions === 'object') {
+                    $.extend(_options, customOptions);
+                }
+            }
+            var getOptions = function () {
+                return _options;
+            }
+
+            objToReturn.loadOptions = loadOptions;
+            objToReturn.getOptions = getOptions;
+            return objToReturn;
+        }());
+
+        var MathHelper = (function () {
+            var objToReturn = {};
+            var getRoundedNumber = function (number) {
+                number = parseFloat(number);
+                if (isNaN(number)) {
+                    throw new Error('Parameter is not a Number');
+                }
+                var options = OptionManager.getOptions();
+                return number.toFixed(options.numberOfDecimals);
+            }
+            objToReturn.getRoundedNumber = getRoundedNumber;
+            return objToReturn;
+        }());
+
+        var ProductManager = (function () {
+            var objToReturn = {};
+
+            /*
+            PRIVATE
+            */
+            localStorage.products = localStorage.products ? localStorage.products : "";
+            var getIndexOfProduct = function (id) {
+                var productIndex = -1;
+                var products = getAllProducts();
+                $.each(products, function (index, value) {
+                    if (value.id == id) {
+                        productIndex = index;
+                        return;
+                    }
+                });
+                return productIndex;
+            }
+            var setAllProducts = function (products) {
+                localStorage.products = JSON.stringify(products);
+            }
+            var addProduct = function (id, name, summary, price, quantity, image) {
+                var products = getAllProducts();
+                products.push({
+                    id: id,
+                    name: name,
+                    summary: summary,
+                    price: price,
+                    quantity: 1,
+                    image: name
+                });
+                setAllProducts(products);
+            }
+
+            /*
+            PUBLIC
+            */
+            var getAllProducts = function () {
+                try {
+                    var products = JSON.parse(localStorage.products);
+                    return products;
+                } catch (e) {
+                    return [];
+                }
+            }
+            var updatePoduct = function (id, quantity) {
+                var productIndex = getIndexOfProduct(id);
+                if (productIndex < 0) {
+                    return false;
+                }
+                var products = getAllProducts();
+                products[productIndex].quantity = typeof quantity === "undefined" ? products[productIndex].quantity * 1 : quantity;
+                setAllProducts(products);
+                return true;
+            }
+            var setProduct = function (id, name, summary, price, quantity, image) {
+                if (typeof id === "undefined") {
+                    console.error("id required")
+                    return false;
+                }
+                if (typeof name === "undefined") {
+                    console.error("name required")
+                    return false;
+                }
+                if (typeof image === "undefined") {
+                    console.error("image required")
+                    return false;
+                }
+                if (!$.isNumeric(price)) {
+                    console.error("price is not a number")
+                    return false;
+                }
+                if (!$.isNumeric(quantity)) {
+                    console.error("quantity is not a number");
+                    return false;
+                }
+                summary = typeof summary === "undefined" ? "" : summary;
+
+                if (!updatePoduct(id)) {
+                    addProduct(id, name, summary, price, quantity, name);
+                }
+            }
+            var clearProduct = function () {
+                setAllProducts([]);
+            }
+            var removeProduct = function (id) {
+                var products = getAllProducts();
+                products = $.grep(products, function (value, index) {
+                    return value.id != id;
+                });
+                setAllProducts(products);
+            }
+            var getTotalQuantity = function () {
+                var total = 0;
+                var products = getAllProducts();
+                $.each(products, function (index, value) {
+                    total += value.quantity * 1;
+                });
+                return total;
+            }
+            var getTotalPrice = function () {
+                var products = getAllProducts();
+                var total = 0;
+                //console.log("st");
+                //console.log(products);
+                //console.log("en");
+                $.each(products, function (index, value) {
+
+                    total += parseFloat(value.price);
+                    //total = MathHelper.getRoundedNumber(total);
+                });
+                return total;
+            }
+
+            objToReturn.getAllProducts = getAllProducts;
+            objToReturn.updatePoduct = updatePoduct;
+            objToReturn.setProduct = setProduct;
+            objToReturn.clearProduct = clearProduct;
+            objToReturn.removeProduct = removeProduct;
+            objToReturn.getTotalQuantity = getTotalQuantity;
+            objToReturn.getTotalPrice = getTotalPrice;
+            return objToReturn;
+        }());
+
+
+        var loadMyCartEvent = function (targetSelector) {
+
+            var options = OptionManager.getOptions();
+            var $cartIcon = $("." + options.classCartIcon);
+            var $cartBadge = $("." + options.classCartBadge);
+            var classProductQuantity = options.classProductQuantity;
+            var classProductRemove = options.classProductRemove;
+            var classCheckoutCart = options.classCheckoutCart;
+
+            var idCartModal = 'my-cart-modal';
+            var idCartTable = 'my-cart-table';
+            var idGrandTotal = 'my-cart-grand-total';
+            var idEmptyCartMessage = 'my-cart-empty-message';
+            var idDiscountPrice = 'my-cart-discount-price';
+            var classProductTotal = 'my-product-total';
+            var classAffixMyCartIcon = 'my-cart-icon-affix';
+
+
+            if (options.cartItems && options.cartItems.constructor === Array) {
+                ProductManager.clearProduct();
+                $.each(options.cartItems, function () {
+                    ProductManager.setProduct(this.id, this.name, this.summary, this.price, this.quantity, this.name);
+                });
+            }
+
+            $cartBadge.text(ProductManager.getTotalQuantity());
+
+            if (!$("#" + idCartModal).length) {
+                $('body').append(
+                    '<div class="modal fade" id="' + idCartModal + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">' +
+                    '<div class="modal-dialog" role="document">' +
+                    '<div class="modal-content">' +
+                    '<div class="modal-header">' +
+                    '<h4 class="modal-title" id="myModalLabel">Rozliczanie wydatków</h4>' +
+                    '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
+                    '</div>' +
+                    '<div class="modal-body">' +
+                    '<table class="table table-hover table-responsive" id="' + idCartTable + '"></table>' +
+                    '</div>' +
+                    '<div class="modal-footer">' +
+                    '<button type="button" class="btn btn-default" data-dismiss="modal">Zamknij</button>' +
+                    '<button type="button" class="btn btn-primary ' + classCheckoutCart + '">Rozlicz</button>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>'
+                );
+            }
+
+            var drawTable = function () {
+                var $cartTable = $("#" + idCartTable);
+                $cartTable.empty();
+
+                var products = ProductManager.getAllProducts();
+                $cartTable.append('<thead><tr class="btn-primary bg-primary"><th>Dokument</th><th>Kwota</th></tr></thead>');
+                $.each(products, function () {
+                    var total = this.quantity * this.price;
+                    $cartTable.append(
+                        '<tr data-id="' + this.id + '" data-price="' + this.price + '">' +
+                        '<td width="50%"><a href="javascript:void(0);" class="btn-md  ' + classProductRemove + '">X</a> ' + this.name + '</td>' +
+                        '<td width="50%" title="Unit Price">' + MathHelper.getRoundedNumber(this.price) + ' ' + options.currencySymbol + '</td>' +
+                        '</tr>'
+                    );
+                });
+
+                $cartTable.append(products.length ?
+                    '<tr>' +
+                    '<td><strong>Łącznie</strong></td>' +
+                    '<td><strong id="' + idGrandTotal + '"></strong></td>' +
+                    '</tr>'
+                    : '<tr class="alert alert-danger" role="alert" id="' + idEmptyCartMessage + '"><td colspan="3">Koszyk jest pusty</td></tr>'
+                );
+
+                showGrandTotal();
+
+            }
+            var showModal = function () {
+                drawTable();
+                $("#" + idCartModal).modal('show');
+            }
+            var updateCart = function () {
+                $.each($("." + classProductQuantity), function () {
+                    var id = $(this).closest("tr").data("id");
+                    ProductManager.updatePoduct(id, $(this).val());
+                });
+            }
+            var showGrandTotal = function () {
+                $("#" + idGrandTotal).text(MathHelper.getRoundedNumber(ProductManager.getTotalPrice()));
+            }
+
+
+            /*
+            EVENT
+            */
+            if (options.affixCartIcon) {
+                var cartIconBottom = $cartIcon.offset().top * 1 + $cartIcon.css("height").match(/\d+/) * 1;
+                var cartIconPosition = $cartIcon.css('position');
+                $(window).scroll(function () {
+                    $(window).scrollTop() >= cartIconBottom ? $cartIcon.addClass(classAffixMyCartIcon) : $cartIcon.removeClass(classAffixMyCartIcon);
+                });
+            }
+
+            $cartIcon.click(function () {
+                options.showCheckoutModal ? showModal() : options.clickOnCartIcon($cartIcon, ProductManager.getAllProducts(), ProductManager.getTotalPrice(), ProductManager.getTotalQuantity());
+            });
+
+            $(document).on("input", "." + classProductQuantity, function () {
+                var price = $(this).closest("tr").data("price");
+                var id = $(this).closest("tr").data("id");
+                var quantity = $(this).val();
+
+                $(this).parent("td").next("." + classProductTotal).text(options.currencySymbol + MathHelper.getRoundedNumber(price * 1));
+                ProductManager.updatePoduct(id, 1);
+
+                $cartBadge.text(ProductManager.getTotalQuantity());
+                showGrandTotal();
+
+            });
+
+            $(document).on('keypress', "." + classProductQuantity, function (evt) {
+                if (evt.keyCode == 38 || evt.keyCode == 40) {
+                    return;
+                }
+                evt.preventDefault();
+            });
+
+            $(document).on('click', "." + classProductRemove, function () {
+                var $tr = $(this).closest("tr");
+                var id = $tr.data("id");
+                $tr.hide(500, function () {
+                    ProductManager.removeProduct(id);
+                    drawTable();
+                    $cartBadge.text(ProductManager.getTotalQuantity());
+                });
+            });
+
+            $(document).on('click', "." + classCheckoutCart, function () {
+                var products = ProductManager.getAllProducts();
+                if (!products.length) {
+                    $("#" + idEmptyCartMessage).fadeTo('fast', 0.5).fadeTo('fast', 1.0);
+                    return;
+                }
+                updateCart();
+                options.checkoutCart(ProductManager.getAllProducts(), ProductManager.getTotalPrice(), ProductManager.getTotalQuantity());
+
+                $cartBadge.text(ProductManager.getTotalQuantity());
+                $("#" + idCartModal).modal("hide");
+            });
+
+            $(document).on('click', targetSelector, function () {
+
+                var $target = $(this);
+                options.clickOnAddToCart($target);
+
+                var id = $target.data('id');
+                var name = $target.data('name');
+                var summary = $target.data('summary');
+                var price = $target.data('price');
+                var quantity = $target.data('quantity');
+                var image = $target.data('name');
+
+                swal({
+                    title: 'Opłacić wydatek w całości?',
+                    input: 'checkbox',
+                    inputClass: 'checkbox-icon fuse-ripple-ready',
+                    confirmButtonText: "Opłać",
+                    inputPlaceholder: 'Opłać częściowo'
+                }).then(function (result) {
+                    if (result === 1) {
+
+                        sweetAlert({
+                            title: "Podaj kwotę",
+                            text: '',
+                            input: 'text',
+                            inputClass: 'p_cnetto',
+                            showCancelButton: true,
+                            closeOnConfirm: false,
+                            animation: "slide-from-top"
+                        }).then(function (result) {
+                            if (result) {
+                                var nval = Inputmask.unmask(result, {alias: "currency", prefix: "Zł "});
+
+                                if (price < nval) {
+                                    swal('Podana kwota jest wyższa niż kwota wydatku');
+                                    return;
+                                }
+                                ProductManager.setProduct(id, name, summary, nval, quantity, image);
+                                $cartBadge.text(ProductManager.getTotalQuantity());
+
+                                options.afterAddOnCart(ProductManager.getAllProducts(), ProductManager.getTotalPrice(), 1);
+                            }
+                        }).catch(swal.noop);
+
+
+                        // org
+
+                        $(".p_cnetto").inputmask({alias: "currency", prefix: "Zł "});
+                    } else if (result === 0) {
+
+                        ProductManager.setProduct(id, name, summary, price, quantity, image);
+                        $cartBadge.text(ProductManager.getTotalQuantity());
+
+                        options.afterAddOnCart(ProductManager.getAllProducts(), ProductManager.getTotalPrice(), 1);
+                        swal(
+                            'Komunikat !',
+                            'Dodano',
+                            'success'
+                        );
+                    }
+                }).catch(swal.noop);
+
+
+            });
+
+        }
+
+
+        $.fn.myCart = function (userOptions) {
+            OptionManager.loadOptions(userOptions);
+            loadMyCartEvent(this.selector);
+            return this;
+        }
+
+        var goToCartIcon = function ($addTocartBtn) {
+            var $cartIcon = $(".my-cart-icon");
+
+            $addTocartBtn.css({
+                "background-color": "green"
+            });
+            $addTocartBtn.attr('disabled', 'disabled');
+
+        }
+
+        $('.my-cart-btn').myCart({
+            currencySymbol: 'zł',
+            classCartIcon: 'my-cart-icon',
+            classCartBadge: 'my-cart-badge',
+            classProductQuantity: 'my-product-quantity',
+            classProductRemove: 'my-product-remove',
+            classCheckoutCart: 'my-cart-checkout',
+            affixCartIcon: true,
+            showCheckoutModal: true,
+            numberOfDecimals: 2,
+            cartItems: null,
+            clickOnAddToCart: function ($addTocart) {
+                goToCartIcon($addTocart);
+            },
+            afterAddOnCart: function (products, totalPrice, totalQuantity) {
+                //console.log("afterAddOnCart", products, totalPrice, totalQuantity);
+            },
+            clickOnCartIcon: function ($cartIcon, products, totalPrice, totalQuantity) {
+                //console.log("cart icon clicked", $cartIcon, products, totalPrice, totalQuantity);
+            },
+            checkoutCart: function (products, totalPrice, totalQuantity) {
+                var co = [];
+                $.each(products, function () {
+
+                    co.push({
+                        id: this.id,
+                        name: this.name,
+                        price: this.price,
+                    });
+                });
+
+
+                // swal
+                swal({
+                    title: 'Czy chcesz opłacić wydatki?',
+                    text: "",
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Tak',
+                    cancelButtonText: 'Nie',
+                    confirmButtonClass: 'btn btn-success',
+                    cancelButtonClass: 'btn btn-danger',
+                    buttonsStyling: false
+                }).then(function () {
+                    var postdata = {
+                        'j': JSON.stringify(co),
+                        '<?php echo $this->security->get_csrf_token_name(); ?>': '<?php echo $this->security->get_csrf_hash(); ?>'
+                    };
+                    $.ajax({
+                        url: '<?PHP echo base_url(); ?>Wydatki/karta_rozlicz',
+                        method: 'POST',
+                        data: postdata,
+                        success: function (data) {
+
+
+                            if (data.response.status) {
+                                if (data.response.message === "Rozliczono") {
+                                    ProductManager.clearProduct();
+                                    $("#my-cart-modal").modal("hide");
+                                    $(".my-cart-badge").html("0");
+                                    var win = window.open('<?PHP echo base_url();?>'+data.response.potwierdzenie, '_blank');
+                                    if (win) {
+                                        win.focus();
+                                    } else {
+                                        //Browser has blocked it
+
+                                        alert('Please allow popups for this website');
+                                    }
+
+
+                                }
+
+                            }
+                            swal({
+                                    title: 'Komunikat !',
+                                    html:   data.response.message,
+                                    type: 'success'
+                                },
+                                function(){
+                                    location.reload();
+                                });
+
+
+                            if(data.response.potwierdzenie){
+                                swal({
+                                        title: 'Potwierdzenie !',
+                                        html:  '<a href="<?PHP echo base_url();?>'+data.response.potwierdzenie + '" target="_blank">Podgląd</a>',
+                                        type: 'success'
+                                    },
+                                    function(){
+                                        location.reload();
+                                    });
+
+                            }
+
+
+                        }
+                    });
+
+                }, function (dismiss) {
+                    if (dismiss === 'cancel') {
+                        swal(
+                            'Anulowano',
+                            'Nie rozliczono wydatków',
+                            'error'
+                        )
+                    }
+                });
+
+            }
+        });
+
+        $("#addNewProduct").click(function (event) {
+            var currentElementNo = $(".row").children().length + 1;
+            $(".row").append('<div class="col-md-3 text-center"><img src="images/img_empty.png" width="150px" height="150px"><br>product ' + currentElementNo + ' - <strong>' + currentElementNo + '</strong><br><button class="btn btn-danger my-cart-btn" data-id="' + currentElementNo + '" data-name="product ' + currentElementNo + '" data-summary="summary ' + currentElementNo + '" data-price="' + currentElementNo + '" data-quantity="1" data-image="images/img_empty.png">Add to Cart</button><a href="#" class="btn btn-info">Details</a></div>')
+        });
+    })(jQuery);
 </script>
 
 </body>

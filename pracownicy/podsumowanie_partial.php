@@ -36,79 +36,6 @@
     <tbody>
     <?PHP
 
-    error_reporting(0);
-
-    $place = $this->pracownicy->Place_raport_caly();
-    $delegacje = $this->pracownicy->Delegacje_raport_caly();
-
-    $premie = $this->pracownicy->Premie_raport_caly();
-    $doreki = $this->pracownicy->Doreki_raport_caly();
-
-
-    $umowy = $this->pracownicy->Umowy_raport_caly();
-
-    $wydatki = $this->pracownicy->Wydatki_raport_caly();
-
-    $potracenia = $this->pracownicy->Potracenia_raport_caly();
-
-    $oplaconeGotowka = $this->pracownicy->PobierzOplaconeCale(1);
-    $oplaconePrzelew = $this->pracownicy->PobierzOplaconeCale(2);
-
-    function ret($var)
-    {
-        return isset($var) ? $var : $var = "0.00";
-    }
-
-
-
-    foreach ($p as $prac) {
-
-        $umowykwotazus_pracownik = $umowy[$prac["id_pracownika"]]["zus_pracownik"];
-        $umowykwotazus_pracodawca = $umowy[$prac["id_pracownika"]]["zus_pracodawca"];
-        $placezus_pracownik = $place[$prac["id_pracownika"]]["zus_pracownik"];
-        $placezus_pracodawca = $place[$prac["id_pracownika"]]["zus_pracodawca"];
-		
-        $totalzuspracownik = bcadd($placezus_pracownik, $umowykwotazus_pracownik, 2);
-        $totalzuspracodawca = bcadd($placezus_pracodawca, $umowykwotazus_pracodawca, 2);
-
-
-      
-
-        $nareke = bcadd($nareke,$place[$prac["id_pracownika"]]["kwota"],2);
-        $nareke = bcadd($nareke, $umowy[$prac["id_pracownika"]]["kwota"], 2);
-        $nareke = bcadd($nareke, $delegacje[$prac["id_pracownika"]]["kwota"], 2);
-        $nareke = bcadd($nareke, $premie[$prac["id_pracownika"]]["kwota"], 2);
-        $nareke = bcadd($nareke, $doreki[$prac["id_pracownika"]]["kwota"], 2);
-        $nareke = bcsub($nareke,$potracenia[$prac["id_pracownika"]]["kwota"],2);
-		
-		$kosztpracodawcy = bcadd($kosztpracodawcy,bcadd($totalzuspracodawca, $totalzuspracownik, 2),2);
-		$kosztpracodawcy = bcadd($kosztpracodawcy,$nareke,2);
-		
-		  
-        $obrot = bcadd($kosztpracodawcy, $wydatki[$prac["id_pracownika"]]["kwota"], 2);
-
-        echo "<tr>
-                   <td>" . $prac["kto"] . "</td>
-                   <td>" . ret($place[$prac["id_pracownika"]]["kwota"]) . "</td>
-                                <td>" . ret($umowy[$prac["id_pracownika"]]["kwota"]) . "</td>
-                                <td>" . ret($delegacje[$prac["id_pracownika"]]["kwota"]) . "</td>
-                                <td>" . ret($premie[$prac["id_pracownika"]]["kwota"]) . "</td>
-                                <td>" . ret($doreki[$prac["id_pracownika"]]["kwota"]) . "</td>
-                                <td>" . ret($nareke) . "</td>
-                                <td>" . ret($wydatki[$prac["id_pracownika"]]["kwota"]) . "</td>
-                                <td>" . ret($potracenia[$prac["id_pracownika"]]["kwota"]) . "</td>
-                                <td>" . ret($totalzuspracownik) . "</td>
-                                <td>" . ret($totalzuspracodawca) . "</td>
-                                <td>" . ret(bcadd($totalzuspracodawca, $totalzuspracownik, 2)) . "</td>
-                                <td>" . ret($kosztpracodawcy) . "</td>
-                                <td>" . ret($obrot) . "</td>
-                                <td>" . ret($oplaconeGotowka[$prac["id_pracownika"]]["kwota"]) . "</td>
-                                <td>" . ret($oplaconePrzelew[$prac["id_pracownika"]]["kwota"]) . "</td>
-                                <td><button type=\"button\" data-id=\"".$prac["id_pracownika"]."\" data-toggle=\"modal\" data-target=\"#oplacGotowke\">Opłać gotówka</button> 
-                                <button type=\"button\" data-id=\"".$prac["id_pracownika"]."\" data-toggle=\"modal\" data-target=\"#oplacPrzelew\">Opłać przelew</button></td>
-                                </tr>";
-								unset($nareke,$kosztpracodawcy,$obrot,$totalzuspracodawca,$totalzuspracownik,$placezus_pracodawca,$placezus_pracownik,$umowykwotazus_pracownik,$umowykwotazus_pracodawca);
-    }
     ?>
     </tbody>
 </table>
@@ -129,163 +56,18 @@
     }
 </style>
 <script>
-    var csrfName2 = '<?php echo $this->security->get_csrf_token_name(); ?>',
-      csrfHash2 = '<?php echo $this->security->get_csrf_hash(); ?>';
-    $('#oplacGotowke').on('show.bs.modal', function(e) {
-
-        //get data-id attribute of the clicked element
-        var ID = $(e.relatedTarget).data('id');
-
-
-        $("#oplacGotowke_f").formValidation({
-            framework: "bootstrap",
-            icon: {
-                valid: "glyphicon glyphicon-ok",
-                invalid: "glyphicon glyphicon-remove",
-                validating: "glyphicon glyphicon-refresh"
-            },
-            fields: {
-                cf_oplac_gotowka: {validators: {notEmpty: {message: "Pole jest wymagane"}}},
-            }
-        }).on("success.form.fv", function (e) {
-            var a = $(e.target);
-            a.data("formValidation");
-            e.preventDefault(), $.ajax({
-                url: "<?PHP echo base_url();?>Pracownicy/RozliczGotowke/"+ID,
-                method: "POST",
-                data: a.serialize() +"&" + csrfName2 + "=" + csrfHash2 + "&mp=" + $('#month_picker').val() + "&yp=" + $('#year_picker').val(),
-                success: function (e) {
-                    $(this).closest("form").find("input[type=text]").val(""), e.response.status && ($(this).closest("form").find("input[type=text]").val(""), $("#oplacGotowke_f").data("formValidation").resetForm(), $("#oplacGotowke_f").trigger("reset"), location.reload()), swal("Komunikat!", e.response.message, "info")
-                }
-            })
-        });
-
+    $.ajax({
+        type: "POST",
+        url: "<?PHP echo base_url();?>Pracownicy/Podsumowaniejson",
+        data: {
+            '<?php echo $this->security->get_csrf_token_name(); ?>': '<?php echo $this->security->get_csrf_hash(); ?>',
+            customMonth: $('#month_picker').val(),
+            customYear: $('#year_picker').val()
+        },
+        success: function (data) {
+          //  $("#tablec").html(data);
+            console.log(data);
+        }
     });
-
-    $('#oplacPrzelew').on('show.bs.modal', function(e) {
-
-        var ID = $(e.relatedTarget).data('id');
-
-        $("#oplacPrzelew_f").formValidation({
-            framework: "bootstrap",
-            icon: {
-                valid: "glyphicon glyphicon-ok",
-                invalid: "glyphicon glyphicon-remove",
-                validating: "glyphicon glyphicon-refresh"
-            },
-            fields: {
-                cf_oplac_gotowka: {validators: {notEmpty: {message: "Pole jest wymagane"}}},
-            }
-        }).on("success.form.fv", function (e) {
-            var a = $(e.target);
-            a.data("formValidation");
-            e.preventDefault(), $.ajax({
-                url: "<?PHP echo base_url();?>Pracownicy/RozliczPrzelew/"+ID,
-                method: "POST",
-                data: a.serialize() +"&" + csrfName2 + "=" + csrfHash2 + "&mp=" + $('#month_picker').val() + "&yp=" + $('#year_picker').val(),
-                success: function (e) {
-                    $(this).closest("form").find("input[type=text]").val(""), e.response.status && ($(this).closest("form").find("input[type=text]").val(""), $("#oplacPrzelew_f").data("formValidation").resetForm(), $("#oplacPrzelew_f").trigger("reset"), location.reload()), swal("Komunikat!", e.response.message, "info")
-                }
-            })
-        });
-
-    });
-
-
-    $("#cf_oplac_gotowka,#cf_oplac_przelew").inputmask({alias: "currency", prefix: "Zł "});
-
 </script>
-<div id="oplacPrzelew" class="modal fade" role="dialog" style="margin-top: 60px;"
-     aria-labelledby="exampleModalLiveLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-header bg-green-400 text-white"><h4 class="modal-title" id="myLargeModalLabel">Opłać
 
-        </div>
-        <div class="modal-content">
-
-            <div class="modal-body">
-                <form id="oplacPrzelew_f" name="dodajDelegacje_f" method="post">
-
-                    <div class="row">
-                        <div class="col-lg-12">
-
-                            <div class="profile-box info-box contact card mb-4">
-
-                                <header class="h6 bg-primary text-auto p-4">
-                                    <div class="title">Opłać - przelew</div>
-                                </header>
-
-                                <div class="content p-4">
-                                    <div class="row">
-
-                                        <div class="form-group pmd-textfield pmd-textfield-floating-label col-sm-12">
-                                            <label for="regular1" class="control-label">Kwota</label>
-                                            <input type="text" name="cf_oplac_przelew" id="cf_oplac_przelew"
-                                                   class="form-control" value="">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="col-xs-5 col-xs-offset-3">
-                            <button type="submit" class="btn btn-primary fuse-ripple-ready">Opłać</button>
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Zakmnij</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-        </div>
-
-    </div>
-</div>
-
-<div id="oplacGotowke" class="modal fade" role="dialog" style="margin-top: 60px;"
-     aria-labelledby="exampleModalLiveLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-header bg-green-400 text-white"><h4 class="modal-title" id="myLargeModalLabel">Opłać
-
-        </div>
-        <div class="modal-content">
-
-            <div class="modal-body">
-                <form id="oplacGotowke_f" name="dodajDelegacje_f" method="post">
-                    <div class="row">
-                        <div class="col-lg-12">
-
-                            <div class="profile-box info-box contact card mb-4">
-
-                                <header class="h6 bg-primary text-auto p-4">
-                                    <div class="title">Opłać - gotówka</div>
-                                </header>
-
-                                <div class="content p-4">
-                                    <div class="row">
-
-                                        <div class="form-group pmd-textfield pmd-textfield-floating-label col-sm-12">
-                                            <label for="regular1" class="control-label">Kwota</label>
-                                            <input type="text" name="cf_oplac_gotowka" id="cf_oplac_gotowka"
-                                                   class="form-control" value="">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="col-xs-5 col-xs-offset-3">
-                            <button type="submit" class="btn btn-primary fuse-ripple-ready">Opłać</button>
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Zakmnij</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-        </div>
-
-    </div>
-</div>

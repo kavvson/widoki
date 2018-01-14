@@ -43,7 +43,10 @@
                                     <span>Po terminie</span>
                                 </label>
                             </div>
-
+                            <div style="float: right; cursor: pointer;">
+                                <span class="icon s-6 icon-cart my-cart-icon"><span
+                                            class="badge badge-success my-cart-badge"></span></span>
+                            </div>
                         </div>
                     </div>
                 </header>
@@ -88,6 +91,7 @@
                                         <option value="Q3">Q3</option>
                                         <option value="Q4">Q4</option>
                                         <option value="this_year">Bieżący rok</option>
+                                        <option value="last_year">Zeszły rok</option>
                                         <option value="last_week">Ostatnie 7 dni</option>
                                         <option value="last_month">Ostatnie 30 dni</option>
                                     </optgroup>
@@ -292,6 +296,8 @@
         src="//cdn.datatables.net/buttons/1.4.0/js/buttons.html5.min.js"></script>
 <script type="text/javascript" language="javascript"
         src="https://cdn.datatables.net/buttons/1.4.0/js/dataTables.buttons.min.js"></script>
+<script src="<?PHP echo base_url(); ?>assets/sweetalert2.min.js"></script>
+<link rel="stylesheet" href="<?PHP echo base_url(); ?>assets/sweetalert2.min.css">
 <style>.dt-buttons {
         display: inline;
     }</style>
@@ -554,10 +560,7 @@
 
         s_rejon();
         zakres_dat();
-        if (f_kontrahent.id) {
-            $("#inputKontrahent").select2('data')[0]['id'] = f_kontrahent.id;
-            $("#inputKontrahent").select2('data')[0]['text'] = f_kontrahent.text;
-        }
+
         //datatables
         table = $('#table3').DataTable({
             "processing": true, //Feature control the processing indicator.
@@ -722,7 +725,6 @@
                     }
 
 
-
                     return s;
 
                 }
@@ -782,8 +784,19 @@
                 },
                 {data: "uwagi",},
                 {data: "ddif", visible: false},
-                {data: "otrzymana_kwota",},
-                {data: "pozostala_kwota",},
+                {
+                    data: "otrzymana_kwota",
+                },
+                {
+                    data: "pozostala_kwota", "mRender": function (data, type, full) {
+                    if (data > 0) {
+                        return '<button class="btn-xs btn-danger my-cart-btn" data-id="' + full['nr'] + '" data-name="' + full['dokument'] + '" data-summary="' + full['kontrahent'] + '" data-price="' + full['pozostala_kwota'] + '" data-quantity="1" data-image="">' + data + ' Opłać</button>';
+
+                    } else {
+                        return "Opłacona";
+                    }
+                }
+                },
             ],
             //Set column definition initialisation properties.
             "columnDefs": [
@@ -823,6 +836,7 @@
             localStorage.removeItem('f_custom_od_przychody');
             localStorage.removeItem('f_custom_do_przychody');
 
+
             $(".db1").fadeOut(1000);
             $(".db2").fadeOut(1000);
             $(".dyearpicker").fadeOut(1000);
@@ -834,5 +848,541 @@
 
 </script>
 
+<script type="text/javascript">
+    /*
+* jQuery myCart - v1.5 - 2017-10-23
+* http://asraf-uddin-ahmed.github.io/
+* Copyright (c) 2017 Asraf Uddin Ahmed; Licensed None
+*/
+
+    (function ($) {
+
+        "use strict";
+
+        var OptionManager = (function () {
+            var objToReturn = {};
+
+            var _options = null;
+            var DEFAULT_OPTIONS = {
+                currencySymbol: 'zł',
+                classCartIcon: 'my-cart-icon',
+                classCartBadge: 'my-cart-badge',
+                classProductQuantity: 'my-product-quantity',
+                classProductRemove: 'my-product-remove',
+                classCheckoutCart: 'my-cart-checkout',
+                affixCartIcon: true,
+                showCheckoutModal: true,
+                numberOfDecimals: 2,
+                cartItems: null,
+                clickOnAddToCart: function ($addTocart) {
+                },
+                afterAddOnCart: function (incomes, totalPrice, totalQuantity) {
+                },
+                clickOnCartIcon: function ($cartIcon, incomes, totalPrice, totalQuantity) {
+                },
+                checkoutCart: function (incomes, totalPrice, totalQuantity) {
+                },
+                getDiscountPrice: function (incomes, totalPrice, totalQuantity) {
+                    return null;
+                }
+            };
+
+
+            var loadOptions = function (customOptions) {
+                _options = $.extend({}, DEFAULT_OPTIONS);
+                if (typeof customOptions === 'object') {
+                    $.extend(_options, customOptions);
+                }
+            }
+            var getOptions = function () {
+                return _options;
+            }
+
+            objToReturn.loadOptions = loadOptions;
+            objToReturn.getOptions = getOptions;
+            return objToReturn;
+        }());
+
+        var MathHelper = (function () {
+            var objToReturn = {};
+            var getRoundedNumber = function (number) {
+                number = parseFloat(number);
+                if (isNaN(number)) {
+                    throw new Error('Parameter is not a Number');
+                }
+                var options = OptionManager.getOptions();
+                return number.toFixed(options.numberOfDecimals);
+            }
+            objToReturn.getRoundedNumber = getRoundedNumber;
+            return objToReturn;
+        }());
+
+        var ProductManager = (function () {
+            var objToReturn = {};
+
+            /*
+            PRIVATE
+            */
+            localStorage.incomes = localStorage.incomes ? localStorage.incomes : "";
+            var getIndexOfProduct = function (id) {
+                var productIndex = -1;
+                var incomes = getAllincomes();
+                $.each(incomes, function (index, value) {
+                    if (value.id == id) {
+                        productIndex = index;
+                        return;
+                    }
+                });
+                return productIndex;
+            }
+            var setAllincomes = function (incomes) {
+                localStorage.incomes = JSON.stringify(incomes);
+            }
+            var addProduct = function (id, name, summary, price, quantity, image) {
+                var incomes = getAllincomes();
+                incomes.push({
+                    id: id,
+                    name: name,
+                    summary: summary,
+                    price: price,
+                    quantity: 1,
+                    image: name
+                });
+                setAllincomes(incomes);
+            }
+
+            /*
+            PUBLIC
+            */
+            var getAllincomes = function () {
+                try {
+                    var incomes = JSON.parse(localStorage.incomes);
+                    return incomes;
+                } catch (e) {
+                    return [];
+                }
+            }
+            var updatePoduct = function (id, quantity) {
+                var productIndex = getIndexOfProduct(id);
+                if (productIndex < 0) {
+                    return false;
+                }
+                var incomes = getAllincomes();
+                incomes[productIndex].quantity = typeof quantity === "undefined" ? incomes[productIndex].quantity * 1 : quantity;
+                setAllincomes(incomes);
+                return true;
+            }
+            var setProduct = function (id, name, summary, price, quantity, image) {
+                if (typeof id === "undefined") {
+                    console.error("id required")
+                    return false;
+                }
+                if (typeof name === "undefined") {
+                    console.error("name required")
+                    return false;
+                }
+                if (typeof image === "undefined") {
+                    console.error("image required")
+                    return false;
+                }
+                if (!$.isNumeric(price)) {
+                    console.error("price is not a number")
+                    return false;
+                }
+                if (!$.isNumeric(quantity)) {
+                    console.error("quantity is not a number");
+                    return false;
+                }
+                summary = typeof summary === "undefined" ? "" : summary;
+
+                if (!updatePoduct(id)) {
+                    addProduct(id, name, summary, price, quantity, name);
+                }
+            }
+            var clearProduct = function () {
+                setAllincomes([]);
+            }
+            var removeProduct = function (id) {
+                var incomes = getAllincomes();
+                incomes = $.grep(incomes, function (value, index) {
+                    return value.id != id;
+                });
+                setAllincomes(incomes);
+            }
+            var getTotalQuantity = function () {
+                var total = 0;
+                var incomes = getAllincomes();
+                $.each(incomes, function (index, value) {
+                    total += value.quantity * 1;
+                });
+                return total;
+            }
+            var getTotalPrice = function () {
+                var incomes = getAllincomes();
+                var total = 0;
+                //console.log("st");
+                //console.log(incomes);
+                //console.log("en");
+                $.each(incomes, function (index, value) {
+
+                    total += parseFloat(value.price);
+                    //total = MathHelper.getRoundedNumber(total);
+                });
+                return total;
+            }
+
+            objToReturn.getAllincomes = getAllincomes;
+            objToReturn.updatePoduct = updatePoduct;
+            objToReturn.setProduct = setProduct;
+            objToReturn.clearProduct = clearProduct;
+            objToReturn.removeProduct = removeProduct;
+            objToReturn.getTotalQuantity = getTotalQuantity;
+            objToReturn.getTotalPrice = getTotalPrice;
+            return objToReturn;
+        }());
+
+
+        var loadMyCartEvent = function (targetSelector) {
+
+            var options = OptionManager.getOptions();
+            var $cartIcon = $("." + options.classCartIcon);
+            var $cartBadge = $("." + options.classCartBadge);
+            var classProductQuantity = options.classProductQuantity;
+            var classProductRemove = options.classProductRemove;
+            var classCheckoutCart = options.classCheckoutCart;
+
+            var idCartModal = 'my-cart-modal';
+            var idCartTable = 'my-cart-table';
+            var idGrandTotal = 'my-cart-grand-total';
+            var idEmptyCartMessage = 'my-cart-empty-message';
+            var idDiscountPrice = 'my-cart-discount-price';
+            var classProductTotal = 'my-product-total';
+            var classAffixMyCartIcon = 'my-cart-icon-affix';
+
+
+            if (options.cartItems && options.cartItems.constructor === Array) {
+                ProductManager.clearProduct();
+                $.each(options.cartItems, function () {
+                    ProductManager.setProduct(this.id, this.name, this.summary, this.price, this.quantity, this.name);
+                });
+            }
+
+            $cartBadge.text(ProductManager.getTotalQuantity());
+
+            if (!$("#" + idCartModal).length) {
+                $('body').append(
+                    '<div class="modal fade" id="' + idCartModal + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">' +
+                    '<div class="modal-dialog" role="document">' +
+                    '<div class="modal-content">' +
+                    '<div class="modal-header">' +
+                    '<h4 class="modal-title" id="myModalLabel">Rozliczanie przychodu</h4>' +
+                    '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
+                    '</div>' +
+                    '<div class="modal-body">' +
+                    '<table class="table table-striped table-bordered dataTable no-footer dtr-inline" id="' + idCartTable + '"></table>' +
+                    '</div>' +
+                    '<div class="col-lg-12">' +
+                    '<div class="form-check form-check">' +
+                    '                                    <label class="form-check-label">' +
+                    '                                        Kwota przelewu'+
+                    '                                    </label>' +
+                    '                                        <input type="text" class="form-control" id="target_price">' +
+                    '                                </div>' +
+                    '</div>'+
+                    '<div class="modal-footer">' +
+                    '<button type="button" class="btn btn-default" data-dismiss="modal">Zamknij</button>' +
+                    '<button type="button" class="btn btn-primary ' + classCheckoutCart + '">Rozlicz</button>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>'
+                );
+                $("#target_price").inputmask({alias: "currency", prefix: "Zł "});
+            }
+
+            var drawTable = function () {
+                var $cartTable = $("#" + idCartTable);
+                $cartTable.empty();
+
+                var incomes = ProductManager.getAllincomes();
+                $cartTable.append('<thead class="btn-primary bg-primary"><tr><th>Dokument</th><th>Kwota</th></tr></thead>');
+                $.each(incomes, function () {
+                    var total = this.quantity * this.price;
+                    $cartTable.append(
+                        '<tr data-id="' + this.id + '" data-price="' + this.price + '">' +
+                        '<td width="50%"><a href="javascript:void(0);" class="btn-md  ' + classProductRemove + '">X</a> ' + this.name + '</td>' +
+                        '<td width="50%" title="Unit Price">' + MathHelper.getRoundedNumber(this.price) + ' ' + options.currencySymbol + '</td>' +
+                        '</tr>'
+                    );
+                });
+
+                $cartTable.append(incomes.length ?
+                    '<tr>' +
+                    '<td><strong>Łącznie</strong></td>' +
+                    '<td><strong id="' + idGrandTotal + '"></strong></td>' +
+                    '</tr>' +
+                    '<tr>' +
+                    '<td><strong>Różnica</strong></td>' +
+                    '<td><strong id="targetroznica"></strong></td>' +
+                    '</tr>'
+                    : '<tr class="alert alert-danger" role="alert" id="' + idEmptyCartMessage + '"><td colspan="3">Koszyk jest pusty</td></tr>'
+                );
+
+                showGrandTotal();
+                showDiff();
+
+            }
+            var showModal = function () {
+                drawTable();
+                $("#" + idCartModal).modal('show');
+            }
+            var updateCart = function () {
+                $.each($("." + classProductQuantity), function () {
+                    var id = $(this).closest("tr").data("id");
+                    ProductManager.updatePoduct(id, $(this).val());
+                });
+            }
+
+            var showGrandTotal = function () {
+                $("#" + idGrandTotal).text(MathHelper.getRoundedNumber(ProductManager.getTotalPrice()));
+            }
+
+            var showDiff = function () {}
+            $('#target_price').keyup();
+            $(document).on('keyup', '#target_price', function () {
+                var nval = Inputmask.unmask($("#target_price").val(), {alias: "currency", prefix: "Zł "});
+                var dif = nval - MathHelper.getRoundedNumber(ProductManager.getTotalPrice());
+                $('#targetroznica').html(dif.toFixed(2));
+
+                console.log(nval);
+                console.log(dif);
+                console.log(MathHelper.getRoundedNumber(ProductManager.getTotalPrice()));
+            });
+            /*
+            EVENT
+            */
+            if (options.affixCartIcon) {
+                var cartIconBottom = $cartIcon.offset().top * 1 + $cartIcon.css("height").match(/\d+/) * 1;
+                var cartIconPosition = $cartIcon.css('position');
+                $(window).scroll(function () {
+                    $(window).scrollTop() >= cartIconBottom ? $cartIcon.addClass(classAffixMyCartIcon) : $cartIcon.removeClass(classAffixMyCartIcon);
+                });
+            }
+
+            $cartIcon.click(function () {
+                options.showCheckoutModal ? showModal() : options.clickOnCartIcon($cartIcon, ProductManager.getAllincomes(), ProductManager.getTotalPrice(), ProductManager.getTotalQuantity());
+            });
+
+            $(document).on("input", "." + classProductQuantity, function () {
+                var price = $(this).closest("tr").data("price");
+                var id = $(this).closest("tr").data("id");
+                var quantity = $(this).val();
+
+                $(this).parent("td").next("." + classProductTotal).text(options.currencySymbol + MathHelper.getRoundedNumber(price * 1));
+                ProductManager.updatePoduct(id, 1);
+
+                $cartBadge.text(ProductManager.getTotalQuantity());
+                showGrandTotal();
+                showDiff();
+
+            });
+
+            $(document).on('keypress', "." + classProductQuantity, function (evt) {
+                if (evt.keyCode == 38 || evt.keyCode == 40) {
+                    return;
+                }
+                evt.preventDefault();
+            });
+
+            $(document).on('click', "." + classProductRemove, function () {
+                var $tr = $(this).closest("tr");
+                var id = $tr.data("id");
+                $tr.hide(500, function () {
+                    ProductManager.removeProduct(id);
+                    drawTable();
+                    $cartBadge.text(ProductManager.getTotalQuantity());
+                });
+            });
+
+            $(document).on('click', "." + classCheckoutCart, function () {
+                var incomes = ProductManager.getAllincomes();
+                if (!incomes.length) {
+                    $("#" + idEmptyCartMessage).fadeTo('fast', 0.5).fadeTo('fast', 1.0);
+                    return;
+                }
+                updateCart();
+                options.checkoutCart(ProductManager.getAllincomes(), ProductManager.getTotalPrice(), ProductManager.getTotalQuantity());
+
+                $cartBadge.text(ProductManager.getTotalQuantity());
+                $("#" + idCartModal).modal("hide");
+            });
+
+            $(document).on('click', targetSelector, function () {
+
+                var $target = $(this);
+                options.clickOnAddToCart($target);
+
+                var id = $target.data('id');
+                var name = $target.data('name');
+                var summary = $target.data('summary');
+                var price = $target.data('price');
+                var quantity = $target.data('quantity');
+                var image = $target.data('name');
+                var target_price = $("#target_price").val();
+
+                var nval = Inputmask.unmask(target_price, {alias: "currency", prefix: "Zł "});
+
+                if (price < nval) {
+                    swal('Podana kwota jest wyższa niż kwota wydatku');
+                    return;
+                }
+                ProductManager.setProduct(id, name, summary, price, quantity, image);
+                $cartBadge.text(ProductManager.getTotalQuantity());
+
+                options.afterAddOnCart(ProductManager.getAllincomes(), ProductManager.getTotalPrice(), 1);
+
+
+            });
+
+        }
+
+
+        $.fn.myCart = function (userOptions) {
+            OptionManager.loadOptions(userOptions);
+            loadMyCartEvent(this.selector);
+            return this;
+        }
+
+        var goToCartIcon = function ($addTocartBtn) {
+            var $cartIcon = $(".my-cart-icon");
+
+            $addTocartBtn.css({
+                "background-color": "green"
+            });
+            $addTocartBtn.attr('disabled', 'disabled');
+
+        }
+
+
+
+
+        $('.my-cart-btn').myCart({
+            currencySymbol: 'zł',
+            classCartIcon: 'my-cart-icon',
+            classCartBadge: 'my-cart-badge',
+            classProductQuantity: 'my-product-quantity',
+            classProductRemove: 'my-product-remove',
+            classCheckoutCart: 'my-cart-checkout',
+            affixCartIcon: true,
+            showCheckoutModal: true,
+            numberOfDecimals: 2,
+            cartItems: null,
+            clickOnAddToCart: function ($addTocart) {
+                goToCartIcon($addTocart);
+            },
+            afterAddOnCart: function (incomes, totalPrice, totalQuantity) {
+                //console.log("afterAddOnCart", incomes, totalPrice, totalQuantity);
+            },
+            clickOnCartIcon: function ($cartIcon, incomes, totalPrice, totalQuantity) {
+                //console.log("cart icon clicked", $cartIcon, incomes, totalPrice, totalQuantity);
+            },
+            checkoutCart: function (incomes, totalPrice, totalQuantity) {
+                var co = [];
+                $.each(incomes, function () {
+
+                    co.push({
+                        id: this.id,
+                        name: this.name,
+                        price: this.price,
+                    });
+                });
+
+
+                // swal
+                swal({
+                    title: 'Czy chcesz opłacić przychody?',
+                    text: "",
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Tak',
+                    cancelButtonText: 'Nie',
+                    confirmButtonClass: 'btn btn-success',
+                    cancelButtonClass: 'btn btn-danger',
+                    buttonsStyling: false
+                }).then(function () {
+                    var postdata = {
+                        'j': JSON.stringify(co),
+                        '<?php echo $this->security->get_csrf_token_name(); ?>': '<?php echo $this->security->get_csrf_hash(); ?>',
+                        'target_price' :Inputmask.unmask($("#target_price").val(), {alias: "currency", prefix: "Zł "})
+                    };
+                    $.ajax({
+                        url: '<?PHP echo base_url(); ?>Przychody/karta_rozlicz',
+                        method: 'POST',
+                        data: postdata,
+                        success: function (data) {
+
+
+                            if (data.response.status) {
+                                if (data.response.message === "Rozliczono") {
+                                    ProductManager.clearProduct();
+                                    $("#my-cart-modal").modal("hide");
+                                    $(".my-cart-badge").html("0");
+                                    var win = window.open('<?PHP echo base_url();?>'+data.response.potwierdzenie, '_blank');
+                                    if (win) {
+                                        win.focus();
+                                    } else {
+                                        //Browser has blocked it
+
+                                        alert('Please allow popups for this website');
+                                    }
+
+
+                                }
+
+                            }
+                            swal({
+                                    title: 'Komunikat !',
+                                    html:   data.response.message,
+                                    type: 'success'
+                                },
+                                function(){
+                                    location.reload();
+                                });
+
+
+                            if(data.response.potwierdzenie){
+                                swal({
+                                        title: 'Potwierdzenie !',
+                                        html:  '<a href="<?PHP echo base_url();?>'+data.response.potwierdzenie + '" target="_blank">Podgląd</a>',
+                                        type: 'success'
+                                    },
+                                    function(){
+                                        location.reload();
+                                    });
+
+                            }
+
+                        }
+                    });
+
+                }, function (dismiss) {
+                    if (dismiss === 'cancel') {
+                        swal(
+                            'Anulowano',
+                            'Nie rozliczono przychodów',
+                            'error'
+                        )
+                    }
+                });
+
+            }
+        });
+
+
+    })(jQuery);
+
+</script>
 </body>
 </html>

@@ -24,9 +24,15 @@
                             <input type="text" name="nazwa" value="<?php echo ($this->input->post('nazwa') ? $this->input->post('nazwa') : $wydatki_kategorie['nazwa']); ?>" class="form-control" id="nazwa" />
                             <span class="text-danger"><?php echo form_error('nazwa'); ?></span>
                         </div>
+                        <div class="form-check form-check-inline has-success">
+                            <label class="form-check-label">
+                                <input type="checkbox" class="form-check-input" name="pojazd" id="pojazd" <?php echo ($wydatki_kategorie['do_pojazdu'] ?'checked' : $wydatki_kategorie['do_pojazdu']); ?>>
+                                <span class="checkbox-icon fuse-ripple-ready"></span>
+                                <span>Dotyczy pojazdu</span>
+                            </label>
 
-                        <div class="form-group col-md-2">
                             <button type="submit" class="btn btn-success">Zapisz zmiany</button>
+
                         </div>
 
                         <?php echo form_close(); ?>

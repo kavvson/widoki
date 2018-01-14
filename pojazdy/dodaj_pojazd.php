@@ -64,6 +64,10 @@
                                 <input type="text" class="form-control" name="inputPrzeglad" id="inputPrzeglad">
                             </div>
                             <div class="form-group col-md-2">
+                                <label for="inputBrutto" class="col-form-label">Wartość pojazdu</label>
+                                <input type="text" class="form-control" name="inputwartosc_pojazdu" id="inputwartosc_pojazdu">
+                            </div>
+                            <div class="form-group col-md-2">
                                 <div class="form-group pmd-textfield pmd-textfield-floating-label">
                                     <label for="inputSkan" class="col-form-label">Skan asortymentu</label>
                                     <input type="file" class="form-control" name="inputSkan" id="inputSkan">
@@ -137,7 +141,7 @@
         $('#inputPrzeglad').bootstrapMaterialDatePicker({weekStart: 0, time: false}).on('change', function (e) {
             $('#nowyPojazd').formValidation('revalidateField', 'inputPrzeglad');
         });
-
+        $("#inputwartosc_pojazdu").inputmask({alias: "currency", prefix: "Zł "});
         var csrfName = '<?php echo $this->security->get_csrf_token_name(); ?>',
                 csrfHash = '<?php echo $this->security->get_csrf_hash(); ?>';
 
@@ -168,6 +172,13 @@
                     }
                 },
                 stawka_vat: {
+                    validators: {
+                        notEmpty: {
+                            message: 'Pole jest wymagane'
+                        },
+                    }
+                },
+                inputwartosc_pojazdu: {
                     validators: {
                         notEmpty: {
                             message: 'Pole jest wymagane'

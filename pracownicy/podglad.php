@@ -10,9 +10,15 @@
                 <div class="user-info flex-column row flex-lg-row no-gutters align-items-center">
 
 
-                    <div class="name h2 my-6"><?PHP echo $p['imie'] . " " . $p['nazwisko']; ?></div>
+                    <div class="name h2 my-6"><?PHP echo $p['imie'] . " " . $p['nazwisko']; echo ($p['isInactive'])? '<i class="icon-account-off"></i> <span class="text-red-A100"> Nieaktywny </span>': '';?></div>
 
                 </div>
+                <button type="button" id="toogleActivation" class="btn btn-secondary"><i class="icon-add"></i> <?PHP echo ($p['isInactive'])? '<span class="text-green-A700"> Aktywuj </span>': '<span class="text-red-A100"> Dezaktywuj </span>';?></button>
+                <button type="button"  data-toggle="modal"
+                        data-target="#modyfikacjaPracownika"
+                        class="btn btn-secondary"><i class="icon-add"></i> Modyfikacja</button>
+
+
                 <div class="row no-gutters" style="display: -webkit-inline-box;">
                     <div class="form-group pmd-textfield pmd-textfield-floating-label">
                         <label for="regular1" class="control-label" style="width: 127px;">Miesiąc</label>
@@ -63,18 +69,18 @@
                                         aria-controls="about-tab-pane">Wydatki</a></li>
                 <li class="nav-item"><a class="nav-link btn" id="about-tab" data-toggle="tab" href="#place" role="tab"
                                         data-url="<?PHP echo base_url(); ?>Pracownicy/Place/<?PHP echo $id; ?>"
-                                        aria-controls="about-tab-pane">Płaca zasadnicza</a></li>
-                <li class="nav-item"><a class="nav-link btn" id="about-tab" data-toggle="tab" href="#umowy" role="tab"
+                                        aria-controls="about-tab-pane">Płace</a></li>
+               <!-- <li class="nav-item"><a class="nav-link btn" id="about-tab" data-toggle="tab" href="#umowy" role="tab"
                                         data-url="<?PHP echo base_url(); ?>Pracownicy/Umowy/<?PHP echo $id; ?>"
-                                        aria-controls="about-tab-pane">Płaca pozabilansowa</a></li>
+                                        aria-controls="about-tab-pane">Płaca pozabilansowa</a></li>-->
                 <li class="nav-item"><a class="nav-link btn" id="about-tab" data-toggle="tab" href="#delegacje"
                                         role="tab"
                                         data-url="<?PHP echo base_url(); ?>Pracownicy/ListaDelegacji/<?PHP echo $id; ?>"
                                         aria-controls="about-tab-pane">Delegacje</a></li>
 
-                <li class="nav-item"><a class="nav-link btn" id="about-tab" data-toggle="tab" href="#karty" role="tab"
+              <li class="nav-item"><a class="nav-link btn" id="about-tab" data-toggle="tab" href="#karty" role="tab"
                                         data-url="<?PHP echo base_url(); ?>Pracownicy/Karty/<?PHP echo $id; ?>"
-                                        aria-controls="about-tab-pane">Karta +-</a></li>
+                                        aria-controls="about-tab-pane">Zaliczki</a></li> <!-- old karta -->
                 <li class="nav-item"><a class="nav-link btn" id="about-tab" data-toggle="tab" href="#premie" role="tab"
                                         data-url="<?PHP echo base_url(); ?>Pracownicy/Premie/<?PHP echo $id; ?>"
                                         aria-controls="about-tab-pane">Premie</a></li>
@@ -394,6 +400,126 @@
         </div>
     </div>
 </div>
+<div id="modyfikacjaPracownika" class="modal fade" tabindex="-1" role="dialog"
+     aria-labelledby="modyfikacjaPracownika"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg ">
+        <div class="modal-content">
+
+            <div class="modal-header bg-green-400 text-white">
+                <h4 class="modal-title" id="myLargeModalLabel">Edycja pracownika</h4>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid bd-example-row">
+                    <form id="fmodyfikacjaPracownika" name="fmodyfikacjaPracownika" method="post">
+
+                        <div class="profile-box info-box general card mb-4">
+
+                            <header class="h6 bg-primary text-auto p-4">
+                                <div class="title">Personalia</div>
+                            </header>
+
+                            <div class="content p-4">
+
+                                <div class="row">
+                                    <div class="form-group col-md-6">
+                                        <label for="inputImie" class="col-form-label">Imię</label>
+                                        <input type="text" class="form-control" name="inputImie" id="inputImie" value="<?PHP echo $p['imie'];?>">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="inputNazwisko" class="col-form-label">Nazwisko</label>
+                                        <input type="text" class="form-control" name="inputNazwisko" id="inputNazwisko" value="<?PHP echo $p['nazwisko'];?>">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputAddress" class="col-form-label">Ulica</label>
+                                    <input type="text" class="form-control" name="inputUlica" id="inputUlica" value="<?PHP echo $p['ulica'];?>">
+                                </div>
+
+                                <div class="row">
+                                    <div class="form-group col-md-6">
+                                        <label for="inputCity" class="col-form-label">Miasto</label>
+                                        <input type="text" class="form-control" id="inputMiasto" name="inputMiasto" value="<?PHP echo $p['miasto'];?>">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="inputZip" class="col-form-label">Kod pocztowy</label>
+                                        <input type="text" class="form-control" name="inputZip" id="inputZip" value="<?PHP echo $p['kod_pocztowy'];?>">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-md-6">
+                                        <label for="inputZip" class="col-form-label">Staż pracy ( mięsięcy )</label>
+                                        <input type="text" class="form-control" name="inputStaz" id="inputStaz" value="<?PHP echo $p['staz'];?>">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="inputZip" class="col-form-label">Data podjęcia pracy</label>
+                                        <input type="text" class="form-control" name="inputStazData" id="inputStazData" value="<?PHP echo $p['staz_dodano'];?>">
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="profile-box info-box general card mb-4">
+
+                            <header class="h6 bg-amber text-auto p-4">
+                                <div class="title">Dodatkowe informacje</div>
+                            </header>
+
+                            <div class="content p-4">
+                                <div class="row">
+                                    <div class="form-group col-md-12">
+                                        <label for="inputBank" class="col-form-label">Numer konta bankowego</label>
+                                        <input type="text" class="form-control" id="inputBank" name="inputBank" value="<?PHP echo $p['konto'];?>">
+                                    </div>
+
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-md-6">
+                                        <label for="inputTelefon" class="col-form-label">Telefon służbowy</label>
+                                        <input type="text" class="form-control" name="inputTelefon" id="inputTelefon" value="<?PHP echo $p['telefon_sluzbowy'];?>">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="inputTelefonPryw" class="col-form-label">Telefon prywatny</label>
+                                        <input type="text" class="form-control" name="inputTelefonPryw" id="inputTelefonPryw" value="<?PHP echo $p['telefon_prywatny'];?>">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-md-12">
+                                        <label for="inputRejon">Rejon</label>
+                                        <select class="form-control" id="inputRejon" name="inputRejon">
+                                            <option value="1" <?php echo ($p['id_rejonu'] ==  '1') ? ' selected="selected"' : '';?>>Łódź</option>
+                                            <option value="2" <?php echo ($p['id_rejonu'] ==  '2') ? ' selected="selected"' : '';?>>Wrocław</option>
+                                            <option value="3" <?php echo ($p['id_rejonu'] ==  '3') ? ' selected="selected"' : '';?>>Kraj</option>
+                                            <option value="4" <?php echo ($p['id_rejonu'] ==  '4') ? ' selected="selected"' : '';?>>Biuro</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-xs-5 col-xs-offset-3">
+                                <button type="submit" class="btn btn-primary fuse-ripple-ready">Edytuj pracownika</button>
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Cofnij</button>
+                            </div>
+                        </div>
+
+                    </form>
+
+
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <link href="https://cdn.datatables.net/1.10.15/css/dataTables.material.min.css" rel="stylesheet">
 
 <link rel="stylesheet" type="text/css"
@@ -411,8 +537,7 @@
 <script type="text/javascript" src="//cdn.datatables.net/plug-ins/1.10.15/dataRender/ellipsis.js"></script>
 <link rel="stylesheet" type="text/css"
       href="<?PHP echo base_url(); ?>assets/vendor/datetimepicker/css/bootstrap-material-datetimepicker.css"/>
-<script src="<?PHP echo base_url(); ?>assets/sweetalert2.min.js"></script>
-<link rel="stylesheet" href="<?PHP echo base_url(); ?>assets/sweetalert2.min.css">
+
 <script type="text/javascript" language="javascript"
         src="<?PHP echo base_url(); ?>assets/vendor/datetimepicker/js/bootstrap-material-datetimepicker.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/3.2.6/jquery.inputmask.bundle.min.js"></script>
@@ -432,6 +557,60 @@
     $('#month_picker').val(n);
     $('#year_picker').val(y);
 
+
+    $("#toogleActivation").on('click',function () {
+
+        swal({
+            title: 'Czy chcesz <?PHP echo ($p['isInactive'])? '<span class="text-green-A700"> aktywować </span>': '<span class="text-red-A700"> dezaktywować</span>';?> pracownika',
+            text: "",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Tak',
+            cancelButtonText: 'Nie',
+            confirmButtonClass: 'btn btn-success',
+            cancelButtonClass: 'btn btn-danger',
+            buttonsStyling: false
+        }).then(function () {
+            var postdata = {
+                'status': '<?PHP echo $p['isInactive'];?>',
+                'pracownik': '<?PHP echo $id;?>',
+                '<?php echo $this->security->get_csrf_token_name(); ?>': '<?php echo $this->security->get_csrf_hash(); ?>'
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "<?PHP echo base_url();?>Pracownicy/Aktywacja",
+                data: postdata,
+                success: function (data) {
+
+
+                    if (data.response.status) {
+                        location.reload();
+                    }
+
+                    swal(
+                        'Komunikat !',
+                        data.response.message,
+                        'success'
+                    );
+
+
+                }
+            });
+
+        }, function (dismiss) {
+            if (dismiss === 'cancel') {
+                swal(
+                    'Anulowano',
+                    '',
+                    'error'
+                )
+            }
+        });
+
+    });
 
     $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
         e.preventDefault();
@@ -524,6 +703,155 @@
 
     $(document).ready(function () {
 
+        $('#inputStazData').bootstrapMaterialDatePicker({weekStart: 0, time: false}).on('change', function (e) {
+            $('#fmodyfikacjaPracownika').formValidation('revalidateField', 'inputStazData');
+        });
+
+
+        var csrfName = '<?php echo $this->security->get_csrf_token_name(); ?>',
+            csrfHash = '<?php echo $this->security->get_csrf_hash(); ?>';
+        $('#fmodyfikacjaPracownika').formValidation({
+            framework: 'bootstrap',
+
+            icon: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields: {
+                inputImie: {
+                    validators: {
+                        notEmpty: {
+                            message: 'Pole jest wymagane'
+                        }
+                    }
+                },
+                inputNazwisko: {
+                    validators: {
+                        notEmpty: {
+                            message: 'Pole jest wymagane'
+                        }
+                    }
+                },
+                inputUlica: {
+                    validators: {
+                        notEmpty: {
+                            message: 'Pole jest wymagane'
+                        }
+                    }
+                },
+                inputMiasto: {
+                    validators: {
+                        notEmpty: {
+                            message: 'Pole jest wymagane'
+                        }
+                    }
+                },
+                inputZip: {
+                    validators: {
+                        notEmpty: {
+                            message: 'Pole jest wymagane'
+                        }
+                    }
+                },
+                inputRejon: {
+                    validators: {
+                        notEmpty: {
+                            message: 'Pole jest wymagane'
+                        }
+                    }
+                },
+                inputStaz: {
+                    validators: {
+                        notEmpty: {
+                            message: 'Pole jest wymagane'
+                        }
+                    }
+                },
+                inputStazData: {
+                    validators: {
+                        notEmpty: {
+                            message: 'Pole jest wymagane'
+                        }
+                    }
+                },
+            }
+        }).on('success.form.fv', function (e) {
+
+            var $form = $(e.target),
+                fv = $form.data('formValidation');
+            e.preventDefault();
+
+            $.ajax({
+                url: '<?PHP echo base_url();?>Pracownicy/Edytuj/<?PHP echo $id;?>/<?PHP echo $p['fk_adres'];?>',
+                method: 'POST',
+                data: $form.serialize() + "&" + csrfName2 + "=" + csrfHash2,
+                success: function (data) {
+                    $(this).closest('form').find("input[type=text]").val("");
+
+                    csrfName2 = data.regen.csrfName;
+                    csrfHash2 = data.regen.csrfHash;
+
+                    if (data.response.status)
+                    {
+                        if (data.response.message === "Sukces") {
+                            $(this).closest('form').find("input[type=text]").val("");
+                            $('#fmodyfikacjaPracownika').data('formValidation').resetForm();
+                            $('#fmodyfikacjaPracownika').trigger("reset");
+                            setTimeout(
+                                function ()
+                                {
+                                    $('#modyfikacjaPracownika').modal('hide');
+                                    window.location = window.location.href;
+                                }, 2000);
+                        }
+
+                    }
+                    new PNotify({
+                        text: data.response.message,
+                        confirm: {
+                            confirm: true,
+                            buttons: [
+                                {
+                                    text: 'Zamknij',
+                                    addClass: 'btn btn-link',
+                                    click: function (notice)
+                                    {
+                                        notice.remove();
+                                    }
+                                },
+                                null
+                            ]
+                        },
+                        buttons: {
+                            closer: false,
+                            sticker: false
+                        },
+                        animate: {
+                            animate: true,
+                            in_class: 'slideInDown',
+                            out_class: 'slideOutUp'
+                        },
+                        addclass: 'md multiline action-on-bottom'
+                    });
+
+                }
+            });
+        }).on('err.field.fv', function (e, data) {
+            if (data.fv.getSubmitButton()) {
+                data.fv.disableSubmitButtons(false);
+            }
+        }).on('success.field.fv', function (e, data) {
+            if (data.fv.getSubmitButton()) {
+                data.fv.disableSubmitButtons(false);
+            }
+        });
+
+    $('#modyfikacjaPracownika').on('shown.bs.modal', function () {
+        $('#fmodyfikacjaPracownika').data('formValidation').resetForm();
+        $('#fmodyfikacjaPracownika').trigger("reset");
+
+    });
 
         $("#cf_premia_kwota,#cf_doreki_kwota,#cf_zaliczka_kwota,#cf_potracenie_kwota").inputmask({
             alias: "currency",

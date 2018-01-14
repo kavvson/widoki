@@ -128,7 +128,7 @@
 
                                 </div>  
 
-                                <center><button disabled="disabled" class="btn btn-primary btn-add-panel btn-xs mt-2 mb-2" id="newrow" type="button"> <i class="icon icon-playlist-plus"></i> Dodaj wiersz</button></center>
+                                <center><button class="btn btn-primary btn-add-panel btn-xs mt-2 mb-2" id="newrow" type="button"> <i class="icon icon-playlist-plus"></i> Dodaj wiersz</button></center>
 
                                 <table style="border-collapse:collapse;width:100%;" id="faktura_t" class="table table-bordered">
                                     <thead>

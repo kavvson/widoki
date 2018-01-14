@@ -68,29 +68,32 @@
         <div class="page-content p-4 p-sm-6">
             <!-- CONTACT LIST -->
             <div class="contacts-list card">
+                <header class="h6 row no-gutters align-items-center justify-content-between bg-primary text-auto p-4">
+                    <div class="title">  Łącznie pracowników (<?PHP echo count($pracownicy); ?>)</div>
+                    <div class=" more fuse-ripple-ready" style="    display: inline-block;    white-space: nowrap;">
+                        <div class="form-group chkboxsmetod">
 
-                <!-- CONTACT LIST HEADER -->
-                <dvi class="contacts-list-header p-4">
-
-                    <div class="row no-gutters align-items-center justify-content-between">
-
-                        <div class="list-title text-muted">
-                            Łącznie pracowników (<?PHP echo count($pracownicy); ?>)
+                            <div class="form-check form-check-inline has-success">
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" name="toggleInactive" id="tgi" checked>
+                                    <span class="checkbox-icon fuse-ripple-ready"></span>
+                                    <span>Ukryj nieaktywnych</span>
+                                </label>
+                            </div>
                         </div>
 
                     </div>
+                </header>
 
-                </dvi>
-                <!-- / CONTACT LIST HEADER -->
 
-                <?PHP if (!empty($pracownicy)) {
+                <?PHP  if (!empty($pracownicy)) {
                     foreach ($pracownicy as $p) { ?>
 
-                        <div class="contact-item ripple row no-gutters align-items-center py-2 px-3 py-sm-4 px-sm-6 fuse-ripple-ready">
+                        <div class="contact-item ripple row no-gutters align-items-center py-2 px-3 py-sm-4 px-sm-6 fuse-ripple-ready" data-active="<?PHP echo ($p['isInactive']);?>">
 
-                            <span class="avatar mx-4" alt=""><?PHP echo substr($p['imie'], 0, 3); ?></span>
+                            <span class="avatar mx-4" alt=""><?PHP echo mb_substr($p['nazwisko'], 0, 3); ?></span>
 
-                            <div class="col text-truncate font-weight-bold"><a href="<?PHP echo base_url();?>Pracownicy/Podglad/<?PHP echo $p['id_pracownika']; ?>"><?PHP echo $p['imie'] . " " . $p['nazwisko']; ?></a></div>
+                            <div class="col text-truncate font-weight-bold"><?PHP echo ($p['isInactive'])? '<i class="icon-account-off"></i>': '';?><a href="<?PHP echo base_url();?>Pracownicy/Podglad/<?PHP echo $p['id_pracownika']; ?>"><?PHP echo $p['imie'] . " " . $p['nazwisko']; ?></a></div>
 
                             <div class="col job-title text-truncate px-1 d-none d-sm-flex"> <?PHP echo $p['nazwa']; ?> </div>
 
@@ -113,7 +116,33 @@
         <!-- / CONTENT -->
     </div>
 </div>
+<script>
+    function toggle(a) {
+        $('.contact-item[data-active]').each(function(){
+            var dataActive = $(this).data('active');
 
+            if(a && dataActive)
+            {
+               $(this).hide();
+            }else{
+                $(this).show();
+            }
+
+        });
+    }
+
+    $("#tgi").change(function() {
+        if ($("#tgi").is(":checked")) {
+            toggle(1);
+        } else {
+            toggle(0);
+        }
+    });
+
+    toggle(1);
+
+
+</script>
 <div id="gridSystemModal" class="modal fade" tabindex="-1" role="dialog"
      aria-labelledby="gridSystemModal"
      aria-hidden="true">
@@ -162,6 +191,16 @@
                                     <div class="form-group col-md-6">
                                         <label for="inputZip" class="col-form-label">Kod pocztowy</label>
                                         <input type="text" class="form-control" name="inputZip" id="inputZip">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-md-6">
+                                        <label for="inputZip" class="col-form-label">Staż pracy ( mięsięcy )</label>
+                                        <input type="text" class="form-control" name="inputStaz" id="inputStaz">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="inputZip" class="col-form-label">Data podjęcia pracy</label>
+                                        <input type="text" class="form-control" name="inputStazData" id="inputStazData">
                                     </div>
                                 </div>
 
@@ -226,9 +265,15 @@
         </div>
     </div>
 </div>
+<link rel="stylesheet" type="text/css"
+      href="<?PHP echo base_url(); ?>assets/vendor/datetimepicker/css/bootstrap-material-datetimepicker.css"/>
+<script type="text/javascript" language="javascript"
+        src="<?PHP echo base_url(); ?>assets/vendor/datetimepicker/js/bootstrap-material-datetimepicker.js"></script>
 <script>
     $(document).ready(function () {
-
+        $('#inputStazData').bootstrapMaterialDatePicker({weekStart: 0, time: false}).on('change', function (e) {
+            $('#fmodyfikacjaPracownika').formValidation('revalidateField', 'inputStazData');
+        });
         var csrfName = '<?php echo $this->security->get_csrf_token_name(); ?>',
                 csrfHash = '<?php echo $this->security->get_csrf_hash(); ?>';
         $('#nowyPracownik').formValidation({
@@ -281,7 +326,21 @@
                             message: 'Pole jest wymagane'
                         }
                     }
-                }
+                },
+                inputStaz: {
+                    validators: {
+                        notEmpty: {
+                            message: 'Pole jest wymagane'
+                        }
+                    }
+                },
+                inputStazData: {
+                    validators: {
+                        notEmpty: {
+                            message: 'Pole jest wymagane'
+                        }
+                    }
+                },
             }
         }).on('success.form.fv', function (e) {
 
@@ -309,6 +368,7 @@
                                     function ()
                                     {
                                         $('#gridSystemModal').modal('hide');
+                                        window.location = window.location.href;
                                     }, 2000);
                         }
 
